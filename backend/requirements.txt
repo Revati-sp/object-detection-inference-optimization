@@ -1,0 +1,34 @@
+# ── Core framework ──────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9      # required for Form / File uploads in FastAPI
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+
+# ── Deep learning ───────────────────────────────────────────────────────────
+torch>=2.3.0
+torchvision>=0.18.0
+# Install CUDA build of torch/torchvision separately if using GPU:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# ── Detection models ────────────────────────────────────────────────────────
+ultralytics>=8.2.0           # YOLOv8 (also downloads weights automatically)
+# YOLOv5 is loaded via torch.hub (no package install needed)
+
+# ── ONNX Runtime ────────────────────────────────────────────────────────────
+onnxruntime>=1.18.0          # CPU-only
+# For GPU (CUDA 12): pip install onnxruntime-gpu>=1.18.0
+onnx>=1.16.0
+# onnxsim>=0.4.35            # Optional: ONNX simplifier — requires cmake: pip install onnxsim
+
+# ── Computer vision ─────────────────────────────────────────────────────────
+opencv-python-headless>=4.9.0
+Pillow>=10.3.0
+numpy>=1.26.0
+
+# ── Evaluation ──────────────────────────────────────────────────────────────
+pycocotools>=2.0.7
+
+# ── Utilities ───────────────────────────────────────────────────────────────
+aiofiles>=23.2.1
+python-dotenv>=1.0.1
