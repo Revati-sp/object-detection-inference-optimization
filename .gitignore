@@ -49,6 +49,14 @@ outputs/
 weights/*.torchscript
 weights/*.onnx
 results/
+
+# Data (but include sample images for testing)
+data/images/
+data/annotations/
+!data/sample/
+!data/sample/*.jpg
+!data/README.md
+results/
 predictions/
 
 # Cache

@@ -1,0 +1,295 @@
+{
+  "info": {
+    "description": "Sample COCO dataset for testing Object Detection model",
+    "version": "1.0",
+    "year": 2024
+  },
+  "licenses": [
+    {
+      "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/",
+      "id": 1,
+      "name": "Attribution-NonCommercial-ShareAlike License"
+    }
+  ],
+  "images": [
+    {
+      "license": 1,
+      "file_name": "sample_01.jpg",
+      "coco_url": "http://mscoco.org/images/1",
+      "height": 426,
+      "width": 640,
+      "date_captured": "2024-01-01 00:00:00",
+      "flickr_url": "http://www.flickr.com/photos/1/1",
+      "id": 1
+    },
+    {
+      "license": 1,
+      "file_name": "sample_02.jpg",
+      "coco_url": "http://mscoco.org/images/2",
+      "height": 426,
+      "width": 640,
+      "date_captured": "2024-01-01 00:00:00",
+      "flickr_url": "http://www.flickr.com/photos/1/2",
+      "id": 2
+    },
+    {
+      "license": 1,
+      "file_name": "sample_03.jpg",
+      "coco_url": "http://mscoco.org/images/3",
+      "height": 426,
+      "width": 640,
+      "date_captured": "2024-01-01 00:00:00",
+      "flickr_url": "http://www.flickr.com/photos/1/3",
+      "id": 3
+    },
+    {
+      "license": 1,
+      "file_name": "sample_04.jpg",
+      "coco_url": "http://mscoco.org/images/4",
+      "height": 426,
+      "width": 640,
+      "date_captured": "2024-01-01 00:00:00",
+      "flickr_url": "http://www.flickr.com/photos/1/4",
+      "id": 4
+    },
+    {
+      "license": 1,
+      "file_name": "sample_05.jpg",
+      "coco_url": "http://mscoco.org/images/5",
+      "height": 426,
+      "width": 640,
+      "date_captured": "2024-01-01 00:00:00",
+      "flickr_url": "http://www.flickr.com/photos/1/5",
+      "id": 5
+    }
+  ],
+  "annotations": [
+    {
+      "segmentation": [
+        [
+          0,
+          0,
+          640,
+          0,
+          640,
+          426,
+          0,
+          426
+        ]
+      ],
+      "area": 272640,
+      "iscrowd": 0,
+      "image_id": 1,
+      "bbox": [
+        0,
+        0,
+        640,
+        426
+      ],
+      "category_id": 1,
+      "id": 1
+    },
+    {
+      "segmentation": [
+        [
+          0,
+          0,
+          640,
+          0,
+          640,
+          426,
+          0,
+          426
+        ]
+      ],
+      "area": 272640,
+      "iscrowd": 0,
+      "image_id": 2,
+      "bbox": [
+        0,
+        0,
+        640,
+        426
+      ],
+      "category_id": 18,
+      "id": 2
+    },
+    {
+      "segmentation": [
+        [
+          0,
+          0,
+          640,
+          0,
+          640,
+          426,
+          0,
+          426
+        ]
+      ],
+      "area": 272640,
+      "iscrowd": 0,
+      "image_id": 3,
+      "bbox": [
+        0,
+        0,
+        640,
+        426
+      ],
+      "category_id": 1,
+      "id": 3
+    },
+    {
+      "segmentation": [
+        [
+          0,
+          0,
+          640,
+          0,
+          640,
+          426,
+          0,
+          426
+        ]
+      ],
+      "area": 272640,
+      "iscrowd": 0,
+      "image_id": 4,
+      "bbox": [
+        0,
+        0,
+        640,
+        426
+      ],
+      "category_id": 1,
+      "id": 4
+    },
+    {
+      "segmentation": [
+        [
+          0,
+          0,
+          640,
+          0,
+          640,
+          426,
+          0,
+          426
+        ]
+      ],
+      "area": 272640,
+      "iscrowd": 0,
+      "image_id": 5,
+      "bbox": [
+        0,
+        0,
+        640,
+        426
+      ],
+      "category_id": 1,
+      "id": 5
+    }
+  ],
+  "categories": [
+    {
+      "supercategory": "person",
+      "id": 1,
+      "name": "person"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 2,
+      "name": "bicycle"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 3,
+      "name": "car"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 4,
+      "name": "motorcycle"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 5,
+      "name": "airplane"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 6,
+      "name": "bus"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 7,
+      "name": "train"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 8,
+      "name": "truck"
+    },
+    {
+      "supercategory": "vehicle",
+      "id": 9,
+      "name": "boat"
+    },
+    {
+      "supercategory": "outdoor",
+      "id": 10,
+      "name": "traffic light"
+    },
+    {
+      "supercategory": "outdoor",
+      "id": 11,
+      "name": "fire hydrant"
+    },
+    {
+      "supercategory": "outdoor",
+      "id": 12,
+      "name": "stop sign"
+    },
+    {
+      "supercategory": "outdoor",
+      "id": 13,
+      "name": "parking meter"
+    },
+    {
+      "supercategory": "outdoor",
+      "id": 14,
+      "name": "bench"
+    },
+    {
+      "supercategory": "animal",
+      "id": 15,
+      "name": "cat"
+    },
+    {
+      "supercategory": "animal",
+      "id": 16,
+      "name": "dog"
+    },
+    {
+      "supercategory": "animal",
+      "id": 17,
+      "name": "horse"
+    },
+    {
+      "supercategory": "animal",
+      "id": 18,
+      "name": "sheep"
+    },
+    {
+      "supercategory": "animal",
+      "id": 19,
+      "name": "cow"
+    },
+    {
+      "supercategory": "animal",
+      "id": 20,
+      "name": "elephant"
+    }
+  ]
+}
