@@ -13,7 +13,7 @@ python scripts/compare_models.py --output results/comparison
 
 # Benchmark + evaluation
 python scripts/compare_models.py \\
-    --annotations data/annotations/instances_val.json \\
+    --annotations data/annotations/instances_custom.json \\
     --images-dir data/images/val \\
     --output results/comparison
 

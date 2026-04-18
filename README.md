@@ -184,6 +184,13 @@ Open: http://localhost:3000
 
 ## Exporting Models
 
+> **Why are weight files not in the repository?**
+> The exported model files (`backend/weights/*.torchscript`, `backend/weights/*.onnx`) are
+> each 20–30 MB and are excluded from git by `.gitignore` to keep the repo lightweight.
+> They are fully reproducible in under two minutes with the commands below.
+> Base PyTorch weights (`.pt`) are downloaded automatically by Ultralytics/PyTorch Hub
+> on first use and cached locally.
+
 TorchScript and ONNX backends require exported model files.
 Always run export scripts from the **project root** with the backend venv active.
 

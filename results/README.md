@@ -13,8 +13,10 @@ cd backend && source venv/bin/activate && cd ..
 Or step by step:
 
 ```bash
-# 1. Download 200-image COCO val2017 subset
-python scripts/prepare_coco_subset.py --num-images 200
+# 1. (Optional) Re-annotate custom images — skip if instances_custom.json already exists
+python scripts/create_custom_annotations.py \
+    --images-dir data/images/val \
+    --output     data/annotations/instances_custom.json
 
 # 2. Export weights (run from backend/)
 cd backend
@@ -28,7 +30,7 @@ cd ..
 cd backend
 python ../scripts/evaluate_dataset.py \
     --model yolov8 yolov5 --compare \
-    --annotations ../data/annotations/instances_val200.json \
+    --annotations ../data/annotations/instances_custom.json \
     --images-dir   ../data/images/val \
     --output       ../results/eval_report.csv
 cd ..

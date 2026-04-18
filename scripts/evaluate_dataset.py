@@ -9,26 +9,26 @@ Usage examples
 # Single model evaluation
 python scripts/evaluate_dataset.py \\
     --model yolov8 --backend pytorch \\
-    --annotations data/annotations/instances_val.json \\
+    --annotations data/annotations/instances_custom.json \\
     --images-dir data/images/val
 
 # Compare all backends for one model
 python scripts/evaluate_dataset.py \\
     --model yolov8 --compare \\
-    --annotations data/annotations/instances_val.json \\
+    --annotations data/annotations/instances_custom.json \\
     --images-dir data/images/val
 
 # Compare ALL model/backend combos and save a report
 python scripts/evaluate_dataset.py \\
     --model yolov8 yolov5 --compare \\
-    --annotations data/annotations/instances_val.json \\
+    --annotations data/annotations/instances_custom.json \\
     --images-dir data/images/val \\
     --output results/eval_report.csv
 
 # Tune thresholds and save COCO prediction JSON
 python scripts/evaluate_dataset.py \\
     --model yolov5 --backend onnx \\
-    --annotations data/annotations/instances_val.json \\
+    --annotations data/annotations/instances_custom.json \\
     --images-dir data/images/val \\
     --confidence 0.3 --iou 0.5 \\
     --save-predictions results/yolov5_onnx_preds.json

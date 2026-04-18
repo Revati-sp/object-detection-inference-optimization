@@ -63,7 +63,7 @@ else
         --num-images 200 \
         --min-anns 1 \
         --output-dir data
-    ANNO_FILE="$DATA_DIR/annotations/instances_val200.json"
+    ANNO_FILE="$DATA_DIR/annotations/instances_custom.json"
 fi
 
 if [ ! -f "$ANNO_FILE" ]; then
