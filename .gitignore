@@ -48,15 +48,17 @@ uploads/
 outputs/
 weights/*.torchscript
 weights/*.onnx
-results/
 
-# Data (but include sample images for testing)
+# Data (but include sample images and annotations for testing)
 data/images/
-data/annotations/
+# Allow committed annotation files and sample data
+!data/annotations/instances_sample.json
 !data/sample/
 !data/sample/*.jpg
 !data/README.md
-results/
+
+# Results ARE committed (mAP + benchmark evidence)
+# results/   <-- intentionally NOT ignored
 predictions/
 
 # Cache

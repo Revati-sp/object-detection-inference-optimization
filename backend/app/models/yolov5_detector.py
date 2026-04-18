@@ -396,37 +396,81 @@ class YOLOv5Detector(BaseDetector):
     # ------------------------------------------------------------------
 
     def export_torchscript(self, output_path: str) -> str:
-        """Export YOLOv5 PyTorch model to TorchScript via torch.jit.trace."""
+        """Export YOLOv5 PyTorch model to TorchScript via torch.jit.trace.
+
+        Wraps the inner DetectionModel in a thin nn.Module that returns only
+        the decoded prediction tensor [1, 25200, 85], matching the expected
+        input shape of ``_postprocess_yolov5_output``.
+        """
         import torch
+        import torch.nn as nn
+
         if self.model is None:
             self._load_pytorch()
 
         out = Path(output_path)
         out.parent.mkdir(parents=True, exist_ok=True)
 
-        dummy = torch.zeros(1, 3, self.image_size, self.image_size).to(self.device)
-        # YOLOv5 hub model wraps the model; access inner model for scripting
+        # The hub AutoShape wrapper exposes .model (DetectionModel).
         inner = self.model.model if hasattr(self.model, "model") else self.model
-        traced = torch.jit.trace(inner, dummy, strict=False)
+        inner.eval()
+
+        # Thin wrapper: strips the tuple so trace sees a single Tensor output.
+        class _SingleOutputWrapper(nn.Module):
+            def __init__(self, m: nn.Module) -> None:
+                super().__init__()
+                self.m = m
+
+            def forward(self, x: torch.Tensor) -> torch.Tensor:
+                out = self.m(x)
+                return out[0] if isinstance(out, (list, tuple)) else out
+
+        wrapper = _SingleOutputWrapper(inner).eval().to(self.device)
+        dummy = torch.zeros(1, 3, self.image_size, self.image_size).to(self.device)
+
+        with torch.no_grad():
+            traced = torch.jit.trace(wrapper, dummy, strict=False)
+
         traced.save(str(out))
         logger.info("YOLOv5 TorchScript exported to %s", out)
         return str(out)
 
     def export_onnx(self, output_path: str) -> str:
-        """Export YOLOv5 to ONNX via torch.onnx.export."""
+        """Export YOLOv5 to ONNX via torch.onnx.export.
+
+        Uses the same single-output wrapper as TorchScript export so the ONNX
+        model returns exactly [1, 25200, 85], matching ``_postprocess_yolov5_output``.
+        """
         import torch
+        import torch.nn as nn
+
         if self.model is None:
             self._load_pytorch()
 
         out = Path(output_path)
         out.parent.mkdir(parents=True, exist_ok=True)
 
-        dummy = torch.zeros(1, 3, self.image_size, self.image_size).to(self.device)
         inner = self.model.model if hasattr(self.model, "model") else self.model
         inner.eval()
 
+        class _SingleOutputWrapper(nn.Module):
+            def __init__(self, m: nn.Module) -> None:
+                super().__init__()
+                self.m = m
+
+            def forward(self, x: torch.Tensor) -> torch.Tensor:
+                out = self.m(x)
+                return out[0] if isinstance(out, (list, tuple)) else out
+
+        wrapper = _SingleOutputWrapper(inner).eval().to(self.device)
+        dummy = torch.zeros(1, 3, self.image_size, self.image_size).to(self.device)
+
+        # Warm-up pass so Detect grids are initialised before tracing.
+        with torch.no_grad():
+            wrapper(dummy)
+
         torch.onnx.export(
-            inner,
+            wrapper,
             dummy,
             str(out),
             opset_version=12,

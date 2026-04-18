@@ -521,6 +521,101 @@ rm -rf frontend/.next && npm run dev
 
 ---
 
+## Evaluation Results
+
+> Results obtained on a 200-image COCO val2017 subset.
+> Run `./scripts/run_complete_pipeline.sh` to reproduce.
+
+### Accuracy (mAP)
+
+| Model | Backend | mAP@0.5 | mAP@0.5:0.95 | Images | Avg Latency (ms) | FPS |
+|-------|---------|---------|--------------|--------|-----------------|-----|
+| YOLOv8n | PyTorch | — | — | 200 | — | — |
+| YOLOv8n | TorchScript | — | — | 200 | — | — |
+| YOLOv8n | ONNX Runtime | — | — | 200 | — | — |
+| YOLOv5s | PyTorch | — | — | 200 | — | — |
+| YOLOv5s | TorchScript | — | — | 200 | — | — |
+| YOLOv5s | ONNX Runtime | — | — | 200 | — | — |
+
+*Fill in after running: `python scripts/evaluate_dataset.py --model yolov8 yolov5 --compare --annotations data/annotations/instances_val200.json --images-dir data/images/val --output results/eval_report.csv`*
+
+### Inference Speed (synthetic 640×640 image, 100 runs)
+
+| Model | Backend | Avg (ms) | Min (ms) | Max (ms) | FPS | Speedup vs PyTorch |
+|-------|---------|---------|---------|---------|-----|--------------------|
+| YOLOv8n | PyTorch | — | — | — | — | 1.00× |
+| YOLOv8n | TorchScript | — | — | — | — | —× |
+| YOLOv8n | ONNX Runtime | — | — | — | — | —× |
+| YOLOv5s | PyTorch | — | — | — | — | 1.00× |
+| YOLOv5s | TorchScript | — | — | — | — | —× |
+| YOLOv5s | ONNX Runtime | — | — | — | — | —× |
+
+*Fill in after running: `python scripts/benchmark_models.py --models yolov8 yolov5 --backends pytorch torchscript onnx --runs 100 --output results/benchmark.csv`*
+
+### Video Inference
+
+| Model | Backend | Frames | Avg Latency/Frame (ms) | Avg FPS | Total Detections |
+|-------|---------|--------|----------------------|---------|-----------------|
+| YOLOv8n | PyTorch | — | — | — | — |
+| YOLOv8n | TorchScript | — | — | — | — |
+| YOLOv8n | ONNX Runtime | — | — | — | — |
+| YOLOv5s | PyTorch | — | — | — | — |
+| YOLOv5s | TorchScript | — | — | — | — |
+| YOLOv5s | ONNX Runtime | — | — | — | — |
+
+*Fill in after running: `python scripts/run_video_inference.py --generate-test-video --compare --results-dir results`*
+
+### How to Reproduce All Results
+
+```bash
+# 1. Activate backend virtualenv
+cd backend && source venv/bin/activate && cd ..
+
+# 2. Run the full pipeline (steps 1–5 automated)
+./scripts/run_complete_pipeline.sh
+
+# --- OR run each step individually ---
+
+# Step 1: Download 200 real COCO val2017 images + annotations
+python scripts/prepare_coco_subset.py --num-images 200
+
+# Step 2: Export YOLOv8 + YOLOv5 to TorchScript and ONNX
+cd backend
+python ../scripts/export_torchscript.py --model yolov8 --output weights/yolov8n.torchscript
+python ../scripts/export_torchscript.py --model yolov5 --output weights/yolov5s.torchscript
+python ../scripts/export_onnx.py        --model yolov8 --output weights/yolov8n.onnx
+python ../scripts/export_onnx.py        --model yolov5 --output weights/yolov5s.onnx
+cd ..
+
+# Step 3: Evaluate mAP across all 6 model/backend combos
+cd backend
+python ../scripts/evaluate_dataset.py \
+    --model yolov8 yolov5 --compare \
+    --annotations ../data/annotations/instances_val200.json \
+    --images-dir   ../data/images/val \
+    --output       ../results/eval_report.csv
+cd ..
+
+# Step 4: Benchmark latency/FPS
+cd backend
+python ../scripts/benchmark_models.py \
+    --models yolov8 yolov5 \
+    --backends pytorch torchscript onnx \
+    --runs 100 --warmup 20 \
+    --output ../results/benchmark.csv
+cd ..
+
+# Step 5: Video inference
+cd backend
+python ../scripts/run_video_inference.py \
+    --generate-test-video --compare \
+    --max-frames 150 \
+    --results-dir ../results --output-dir ../outputs
+cd ..
+```
+
+---
+
 ## Assignment Mapping
 
 | Requirement | Where it is implemented |
@@ -530,6 +625,7 @@ rm -rf frontend/.next && npm run dev
 | **React / Next.js frontend** | `frontend/` — Next.js 14 App Router, TypeScript, Tailwind CSS, drag-and-drop upload, canvas bbox overlay, per-frame sparkline charts, Benchmark tab, Evaluate tab, live backend health badge |
 | **Inference acceleration 1: TorchScript** | `export_torchscript()` in both detector classes; TorchScript inference path `_predict_torchscript()`; export via `scripts/export_torchscript.py` and `scripts/run_all_exports.py` |
 | **Inference acceleration 2: ONNX Runtime** | `export_onnx()` in both detector classes; ONNX inference via `onnxruntime.InferenceSession` with `CUDAExecutionProvider` / CPU fallback; export via `scripts/export_onnx.py` and `scripts/run_all_exports.py` |
-| **mAP evaluation on annotated dataset** | `backend/app/services/evaluation.py` — loads COCO-format annotations, runs inference, computes mAP@0.5 and mAP@0.5:0.95 via pycocotools; `POST /api/evaluate`; `scripts/evaluate_dataset.py` |
-| **Latency / FPS metrics** | Returned in every inference response; per-frame metrics for video; dedicated `/api/benchmark` endpoint; `scripts/benchmark_models.py` for CLI access |
-| **Comparison report** | `scripts/compare_models.py` — single command that benchmarks all model/backend combos and optionally evaluates mAP, writing `results/comparison.md` |
+| **Custom dataset + annotations** | `data/images/val/` — 139 custom screenshots; `data/annotations/instances_custom.json` — per-object COCO bounding-box annotations generated by `scripts/create_custom_annotations.py` using YOLOv8n at conf=0.5 (pseudo-labeling) |
+| **mAP evaluation on annotated dataset** | `backend/app/services/evaluation.py` — loads COCO-format annotations, runs inference, computes mAP@0.5 and mAP@0.5:0.95 via pycocotools; `POST /api/evaluate`; `scripts/evaluate_dataset.py`; results in `results/eval_report.csv` |
+| **Latency / FPS metrics** | Returned in every inference response; per-frame metrics for video; dedicated `/api/benchmark` endpoint; `scripts/benchmark_models.py` for CLI access; results in `results/benchmark.csv` |
+| **Video inference** | `backend/app/services/video_processing.py`; `scripts/run_video_inference.py`; annotated videos in `outputs/`; FPS summary in `results/video_benchmark.csv` |
