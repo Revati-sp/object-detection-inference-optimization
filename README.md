@@ -96,11 +96,17 @@ Object Detection/
 │   ├── evaluate_dataset.py            # COCO mAP evaluation with compare mode
 │   └── compare_models.py              # Benchmark + eval combined Markdown/CSV report
 ├── data/
-│   ├── images/val/                    # Place evaluation images here
-│   └── annotations/                   # Place COCO-format JSON annotations here
-├── results/                           # CSV / Markdown reports written here
+│   ├── images/val/                    # 139 custom screenshots (committed)
+│   ├── annotations/
+│   │   └── instances_custom.json      # COCO-format ground truth — 374 boxes, 36 classes (committed)
+│   └── sample/                        # 5 synthetic images for smoke-testing
+├── results/                           # Generated CSV/JSON reports (committed)
+│   ├── eval_report.csv                # mAP@0.5, mAP@0.5:0.95 per model/backend
+│   ├── benchmark.csv                  # Latency avg/min/max/std + FPS
+│   └── video_benchmark.csv            # Per-frame video inference metrics
 └── docs/
-    └── api_reference.md
+    ├── api_reference.md
+    └── screenshots/                   # Frontend and result screenshots
 ```
 
 ---
@@ -658,43 +664,25 @@ cd ..
 
 ## Screenshots & Visual Outputs
 
-> Add screenshots of the running application here for the assignment submission.
-> Suggested captures (save to `docs/screenshots/` and reference below):
-
 ### Frontend — Detection Tab
-Upload an image or video, select model + backend, and view bounding boxes with latency.
+Drag-and-drop image upload with bounding-box overlay, confidence scores, and latency breakdown.
 
-```
-docs/screenshots/frontend_detect.png   ← drag-and-drop upload + bbox overlay
-```
+![Frontend Upload & Detection](docs/screenshots/frontend-upload.png)
 
-### Frontend — Benchmark Tab
-Bar charts comparing FPS and latency across all model/backend combinations.
+### Detection Results
+Annotated output with per-object labels, confidence, and inference time rendered on the canvas.
 
-```
-docs/screenshots/frontend_benchmark.png
-```
+![Detection Results](docs/screenshots/detection-results.png)
 
-### Frontend — Evaluate Tab
-mAP@0.5 and mAP@0.5:0.95 results per model/backend.
+### Benchmark Results
+Bar charts comparing FPS and average latency across all model × backend combinations.
 
-```
-docs/screenshots/frontend_evaluate.png
-```
+![Benchmark Results](docs/screenshots/benchmark-results.png)
 
-### Sample Annotated Prediction
-An example image from `data/images/val/` with bounding boxes drawn from model inference.
+### Evaluation Results (mAP)
+mAP@0.5 and mAP@0.5:0.95 computed on the 139-image custom dataset.
 
-```
-docs/screenshots/sample_prediction.png
-```
-
-> **How to capture**: Run the app (`uvicorn` + `npm run dev`), upload one of the 139 val images,
-> take a screenshot, and save it to `docs/screenshots/`. Then replace the placeholder paths above
-> with actual Markdown image links:
-> ```markdown
-> ![Detection UI](docs/screenshots/frontend_detect.png)
-> ```
+![Evaluation Results](docs/screenshots/evaluation-results.png)
 
 ---
 
