@@ -94,8 +94,11 @@ async def detect_image(
         )
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    except RuntimeError as e:
+    except (RuntimeError, PermissionError, OSError) as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        logger.exception("Unexpected error during image inference")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
     logger.info(
         "Image inference | model=%s | backend=%s | dets=%d | latency=%.1fms",
@@ -155,8 +158,11 @@ async def detect_video(
         )
     except (FileNotFoundError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except RuntimeError as e:
+    except (RuntimeError, PermissionError, OSError) as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        logger.exception("Unexpected error during video inference")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
     logger.info(
         "Video inference | model=%s | backend=%s | frames=%d | avg_fps=%.1f",

@@ -51,15 +51,18 @@ def _make_detector(model_name: ModelName, backend_type: BackendType) -> BaseDete
     elif model_name == ModelName.yolov5:
         weights = None
         if backend_type == BackendType.pytorch:
-            weights = None  # will use torch.hub auto-download
+            # Use local .pt file if YOLOV5_WEIGHTS looks like a path, else hub variant
+            weights = settings.YOLOV5_WEIGHTS if "/" in settings.YOLOV5_WEIGHTS else None
         elif backend_type == BackendType.torchscript:
             weights = settings.YOLOV5_TORCHSCRIPT_PATH
         elif backend_type == BackendType.onnx:
             weights = settings.YOLOV5_ONNX_PATH
+        # model_variant is only used for torch.hub auto-download (no local .pt)
+        hub_variant = settings.YOLOV5_WEIGHTS if "/" not in settings.YOLOV5_WEIGHTS else "yolov5s"
         return YOLOv5Detector(
             backend_type=backend_type,
             weights_path=weights,
-            model_variant=settings.YOLOV5_WEIGHTS,
+            model_variant=hub_variant,
             confidence_threshold=settings.DEFAULT_CONFIDENCE,
             iou_threshold=settings.DEFAULT_IOU,
             image_size=settings.DEFAULT_IMAGE_SIZE,

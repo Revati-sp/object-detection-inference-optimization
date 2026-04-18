@@ -17,11 +17,8 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    # CORS — allow frontend dev server and production
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ]
+    # CORS — wildcard in dev; restrict to specific origins in production
+    CORS_ORIGINS: List[str] = ["*"]
 
     # Directories (resolved relative to backend root)
     BASE_DIR: Path = Path(__file__).resolve().parents[2]

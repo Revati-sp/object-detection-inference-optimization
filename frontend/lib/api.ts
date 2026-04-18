@@ -8,6 +8,7 @@ import type {
 } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+console.log("[api] BASE_URL →", BASE_URL);
 
 // ---------------------------------------------------------------------------
 // Helpers

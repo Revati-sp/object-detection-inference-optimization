@@ -91,6 +91,20 @@ class YOLOv5Detector(BaseDetector):
 
     def _load_pytorch(self) -> None:
         import torch
+        import os
+
+        # Redirect torch.hub cache to a local directory so ~/.cache/torch is
+        # never touched (avoids PermissionError on macOS).
+        # Check for cache in backend/.torch_cache (populated by scripts) first,
+        # then fall back to project-root/.torch_cache.
+        backend_root = Path(__file__).resolve().parents[2]  # .../backend/
+        project_root = backend_root.parent                   # .../Object Detection/
+        preferred = backend_root / ".torch_cache"
+        fallback  = project_root / ".torch_cache"
+        hub_dir = str(preferred if preferred.exists() else fallback)
+        os.makedirs(hub_dir, exist_ok=True)
+        torch.hub.set_dir(hub_dir)
+
         if self.weights_path and Path(self.weights_path).exists():
             self.model = torch.hub.load(
                 "ultralytics/yolov5",

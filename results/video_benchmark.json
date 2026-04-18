@@ -4,1528 +4,313 @@
     "backend_type": "pytorch",
     "status": "ok",
     "error": null,
-    "frame_count": 150,
-    "average_fps": 37.84356318573922,
-    "average_latency_ms": 26.424573053333283,
-    "total_latency_ms": 3963.6859579999923,
-    "total_detections": 308,
-    "wall_time_s": 4.472216250000001,
-    "output_path": "../outputs/annotated_WhatsApp Video 2026-04-17 at 9.27.53 PM (1)_yolov8_pytorch.mp4",
-    "frames_summary": [
-      {
-        "frame_index": 0,
-        "detections": 2,
-        "latency_ms": 62.80358400000008
-      },
-      {
-        "frame_index": 1,
-        "detections": 3,
-        "latency_ms": 25.090875000000068
-      },
-      {
-        "frame_index": 2,
-        "detections": 3,
-        "latency_ms": 26.07620799999988
-      },
-      {
-        "frame_index": 3,
-        "detections": 2,
-        "latency_ms": 26.32629200000003
-      },
-      {
-        "frame_index": 4,
-        "detections": 2,
-        "latency_ms": 25.51320800000001
-      },
-      {
-        "frame_index": 5,
-        "detections": 2,
-        "latency_ms": 25.818624999999873
-      },
-      {
-        "frame_index": 6,
-        "detections": 2,
-        "latency_ms": 26.012250000000403
-      },
-      {
-        "frame_index": 7,
-        "detections": 3,
-        "latency_ms": 25.93375000000009
-      },
-      {
-        "frame_index": 8,
-        "detections": 3,
-        "latency_ms": 26.882375000000014
-      },
-      {
-        "frame_index": 9,
-        "detections": 2,
-        "latency_ms": 26.60108300000008
-      },
-      {
-        "frame_index": 10,
-        "detections": 2,
-        "latency_ms": 25.569041999999875
-      },
-      {
-        "frame_index": 11,
-        "detections": 2,
-        "latency_ms": 25.39933300000019
-      },
-      {
-        "frame_index": 12,
-        "detections": 2,
-        "latency_ms": 26.42495899999986
-      },
-      {
-        "frame_index": 13,
-        "detections": 2,
-        "latency_ms": 26.048083000000055
-      },
-      {
-        "frame_index": 14,
-        "detections": 2,
-        "latency_ms": 25.604208000000295
-      },
-      {
-        "frame_index": 15,
-        "detections": 3,
-        "latency_ms": 25.521834000000077
-      },
-      {
-        "frame_index": 16,
-        "detections": 2,
-        "latency_ms": 26.24962499999972
-      },
-      {
-        "frame_index": 17,
-        "detections": 2,
-        "latency_ms": 25.830916999999953
-      },
-      {
-        "frame_index": 18,
-        "detections": 2,
-        "latency_ms": 26.5470419999998
-      },
-      {
-        "frame_index": 19,
-        "detections": 3,
-        "latency_ms": 26.388166999999907
-      },
-      {
-        "frame_index": 20,
-        "detections": 2,
-        "latency_ms": 27.352916999999977
-      },
-      {
-        "frame_index": 21,
-        "detections": 2,
-        "latency_ms": 25.879124999999892
-      },
-      {
-        "frame_index": 22,
-        "detections": 2,
-        "latency_ms": 26.237958999999922
-      },
-      {
-        "frame_index": 23,
-        "detections": 2,
-        "latency_ms": 26.28704199999987
-      },
-      {
-        "frame_index": 24,
-        "detections": 3,
-        "latency_ms": 26.21579200000035
-      },
-      {
-        "frame_index": 25,
-        "detections": 3,
-        "latency_ms": 25.579457999999722
-      },
-      {
-        "frame_index": 26,
-        "detections": 4,
-        "latency_ms": 26.242832999999965
-      },
-      {
-        "frame_index": 27,
-        "detections": 3,
-        "latency_ms": 26.157541999999978
-      },
-      {
-        "frame_index": 28,
-        "detections": 3,
-        "latency_ms": 26.193165999999657
-      },
-      {
-        "frame_index": 29,
-        "detections": 3,
-        "latency_ms": 25.565999999999978
-      },
-      {
-        "frame_index": 30,
-        "detections": 2,
-        "latency_ms": 26.38116700000026
-      },
-      {
-        "frame_index": 31,
-        "detections": 1,
-        "latency_ms": 26.206457999999877
-      },
-      {
-        "frame_index": 32,
-        "detections": 2,
-        "latency_ms": 27.218916999999898
-      },
-      {
-        "frame_index": 33,
-        "detections": 2,
-        "latency_ms": 25.773500000000116
-      },
-      {
-        "frame_index": 34,
-        "detections": 2,
-        "latency_ms": 26.23604199999985
-      },
-      {
-        "frame_index": 35,
-        "detections": 2,
-        "latency_ms": 26.247917000000065
-      },
-      {
-        "frame_index": 36,
-        "detections": 2,
-        "latency_ms": 25.99545900000022
-      },
-      {
-        "frame_index": 37,
-        "detections": 2,
-        "latency_ms": 26.93824999999972
-      },
-      {
-        "frame_index": 38,
-        "detections": 2,
-        "latency_ms": 29.085707999999766
-      },
-      {
-        "frame_index": 39,
-        "detections": 1,
-        "latency_ms": 27.153290999999857
-      },
-      {
-        "frame_index": 40,
-        "detections": 1,
-        "latency_ms": 26.288458000000237
-      },
-      {
-        "frame_index": 41,
-        "detections": 1,
-        "latency_ms": 26.684041999999852
-      },
-      {
-        "frame_index": 42,
-        "detections": 1,
-        "latency_ms": 27.105500000000227
-      },
-      {
-        "frame_index": 43,
-        "detections": 1,
-        "latency_ms": 25.874916000000248
-      },
-      {
-        "frame_index": 44,
-        "detections": 2,
-        "latency_ms": 26.035208000000143
-      },
-      {
-        "frame_index": 45,
-        "detections": 1,
-        "latency_ms": 26.056166000000047
-      },
-      {
-        "frame_index": 46,
-        "detections": 1,
-        "latency_ms": 25.93108399999977
-      },
-      {
-        "frame_index": 47,
-        "detections": 1,
-        "latency_ms": 26.623374999999783
-      },
-      {
-        "frame_index": 48,
-        "detections": 1,
-        "latency_ms": 25.342041999999676
-      },
-      {
-        "frame_index": 49,
-        "detections": 1,
-        "latency_ms": 26.029332999999877
-      },
-      {
-        "frame_index": 50,
-        "detections": 1,
-        "latency_ms": 26.078708999999645
-      },
-      {
-        "frame_index": 51,
-        "detections": 2,
-        "latency_ms": 25.604917000000338
-      },
-      {
-        "frame_index": 52,
-        "detections": 2,
-        "latency_ms": 25.328125000000146
-      },
-      {
-        "frame_index": 53,
-        "detections": 2,
-        "latency_ms": 26.714208000000017
-      },
-      {
-        "frame_index": 54,
-        "detections": 1,
-        "latency_ms": 25.297458000000272
-      },
-      {
-        "frame_index": 55,
-        "detections": 1,
-        "latency_ms": 25.923999999999836
-      },
-      {
-        "frame_index": 56,
-        "detections": 2,
-        "latency_ms": 26.239208000000236
-      },
-      {
-        "frame_index": 57,
-        "detections": 2,
-        "latency_ms": 25.87708299999969
-      },
-      {
-        "frame_index": 58,
-        "detections": 1,
-        "latency_ms": 25.195458999999865
-      },
-      {
-        "frame_index": 59,
-        "detections": 1,
-        "latency_ms": 25.29237499999981
-      },
-      {
-        "frame_index": 60,
-        "detections": 1,
-        "latency_ms": 26.209125000000277
-      },
-      {
-        "frame_index": 61,
-        "detections": 1,
-        "latency_ms": 26.441333999999816
-      },
-      {
-        "frame_index": 62,
-        "detections": 1,
-        "latency_ms": 25.2008749999999
-      },
-      {
-        "frame_index": 63,
-        "detections": 1,
-        "latency_ms": 25.43950000000006
-      },
-      {
-        "frame_index": 64,
-        "detections": 1,
-        "latency_ms": 26.985958000000032
-      },
-      {
-        "frame_index": 65,
-        "detections": 1,
-        "latency_ms": 28.2639579999997
-      },
-      {
-        "frame_index": 66,
-        "detections": 1,
-        "latency_ms": 26.31320799999992
-      },
-      {
-        "frame_index": 67,
-        "detections": 1,
-        "latency_ms": 27.263667000000158
-      },
-      {
-        "frame_index": 68,
-        "detections": 1,
-        "latency_ms": 25.84212500000005
-      },
-      {
-        "frame_index": 69,
-        "detections": 1,
-        "latency_ms": 26.280749999999742
-      },
-      {
-        "frame_index": 70,
-        "detections": 1,
-        "latency_ms": 25.45145900000012
-      },
-      {
-        "frame_index": 71,
-        "detections": 1,
-        "latency_ms": 25.894167000000134
-      },
-      {
-        "frame_index": 72,
-        "detections": 1,
-        "latency_ms": 26.03670799999991
-      },
-      {
-        "frame_index": 73,
-        "detections": 1,
-        "latency_ms": 25.983625000000288
-      },
-      {
-        "frame_index": 74,
-        "detections": 1,
-        "latency_ms": 25.655249999999796
-      },
-      {
-        "frame_index": 75,
-        "detections": 1,
-        "latency_ms": 25.656624999999877
-      },
-      {
-        "frame_index": 76,
-        "detections": 1,
-        "latency_ms": 25.756000000000334
-      },
-      {
-        "frame_index": 77,
-        "detections": 1,
-        "latency_ms": 25.662167000000125
-      },
-      {
-        "frame_index": 78,
-        "detections": 1,
-        "latency_ms": 25.25591599999988
-      },
-      {
-        "frame_index": 79,
-        "detections": 3,
-        "latency_ms": 26.392999999999667
-      },
-      {
-        "frame_index": 80,
-        "detections": 3,
-        "latency_ms": 26.259167000000083
-      },
-      {
-        "frame_index": 81,
-        "detections": 2,
-        "latency_ms": 25.71462499999999
-      },
-      {
-        "frame_index": 82,
-        "detections": 2,
-        "latency_ms": 25.87662500000043
-      },
-      {
-        "frame_index": 83,
-        "detections": 1,
-        "latency_ms": 26.364541999999602
-      },
-      {
-        "frame_index": 84,
-        "detections": 2,
-        "latency_ms": 26.56704199999993
-      },
-      {
-        "frame_index": 85,
-        "detections": 2,
-        "latency_ms": 26.013583000000118
-      },
-      {
-        "frame_index": 86,
-        "detections": 2,
-        "latency_ms": 25.52558399999949
-      },
-      {
-        "frame_index": 87,
-        "detections": 2,
-        "latency_ms": 25.660083
-      },
-      {
-        "frame_index": 88,
-        "detections": 3,
-        "latency_ms": 26.678624999999734
-      },
-      {
-        "frame_index": 89,
-        "detections": 3,
-        "latency_ms": 25.43383299999924
-      },
-      {
-        "frame_index": 90,
-        "detections": 3,
-        "latency_ms": 26.839665999999873
-      },
-      {
-        "frame_index": 91,
-        "detections": 3,
-        "latency_ms": 26.116000000000028
-      },
-      {
-        "frame_index": 92,
-        "detections": 4,
-        "latency_ms": 26.488416000000292
-      },
-      {
-        "frame_index": 93,
-        "detections": 4,
-        "latency_ms": 26.247000000000575
-      },
-      {
-        "frame_index": 94,
-        "detections": 3,
-        "latency_ms": 25.188541000000342
-      },
-      {
-        "frame_index": 95,
-        "detections": 3,
-        "latency_ms": 25.65766699999994
-      },
-      {
-        "frame_index": 96,
-        "detections": 4,
-        "latency_ms": 26.04583299999952
-      },
-      {
-        "frame_index": 97,
-        "detections": 3,
-        "latency_ms": 25.513540999999584
-      },
-      {
-        "frame_index": 98,
-        "detections": 4,
-        "latency_ms": 26.188750000000205
-      },
-      {
-        "frame_index": 99,
-        "detections": 2,
-        "latency_ms": 26.429541999999806
-      },
-      {
-        "frame_index": 100,
-        "detections": 3,
-        "latency_ms": 26.397333000000245
-      },
-      {
-        "frame_index": 101,
-        "detections": 3,
-        "latency_ms": 25.719750000000374
-      },
-      {
-        "frame_index": 102,
-        "detections": 2,
-        "latency_ms": 27.557083000000482
-      },
-      {
-        "frame_index": 103,
-        "detections": 3,
-        "latency_ms": 31.873749999999923
-      },
-      {
-        "frame_index": 104,
-        "detections": 2,
-        "latency_ms": 26.599416999999903
-      },
-      {
-        "frame_index": 105,
-        "detections": 2,
-        "latency_ms": 26.08549999999976
-      },
-      {
-        "frame_index": 106,
-        "detections": 3,
-        "latency_ms": 26.602875000000026
-      },
-      {
-        "frame_index": 107,
-        "detections": 4,
-        "latency_ms": 26.11558399999936
-      },
-      {
-        "frame_index": 108,
-        "detections": 3,
-        "latency_ms": 26.27737499999938
-      },
-      {
-        "frame_index": 109,
-        "detections": 3,
-        "latency_ms": 25.6507500000005
-      },
-      {
-        "frame_index": 110,
-        "detections": 3,
-        "latency_ms": 25.837416999999974
-      },
-      {
-        "frame_index": 111,
-        "detections": 2,
-        "latency_ms": 26.536083000000765
-      },
-      {
-        "frame_index": 112,
-        "detections": 3,
-        "latency_ms": 26.510082999999796
-      },
-      {
-        "frame_index": 113,
-        "detections": 2,
-        "latency_ms": 26.074333000000394
-      },
-      {
-        "frame_index": 114,
-        "detections": 2,
-        "latency_ms": 26.662374999999905
-      },
-      {
-        "frame_index": 115,
-        "detections": 3,
-        "latency_ms": 26.72945800000015
-      },
-      {
-        "frame_index": 116,
-        "detections": 2,
-        "latency_ms": 26.096166999999504
-      },
-      {
-        "frame_index": 117,
-        "detections": 3,
-        "latency_ms": 25.980832999999315
-      },
-      {
-        "frame_index": 118,
-        "detections": 3,
-        "latency_ms": 26.142124999999794
-      },
-      {
-        "frame_index": 119,
-        "detections": 2,
-        "latency_ms": 26.238708000000166
-      },
-      {
-        "frame_index": 120,
-        "detections": 2,
-        "latency_ms": 25.93866699999925
-      },
-      {
-        "frame_index": 121,
-        "detections": 3,
-        "latency_ms": 26.062209000000003
-      },
-      {
-        "frame_index": 122,
-        "detections": 2,
-        "latency_ms": 26.359832999999888
-      },
-      {
-        "frame_index": 123,
-        "detections": 2,
-        "latency_ms": 26.13799999999955
-      },
-      {
-        "frame_index": 124,
-        "detections": 2,
-        "latency_ms": 26.258207999999783
-      },
-      {
-        "frame_index": 125,
-        "detections": 2,
-        "latency_ms": 25.360832999999694
-      },
-      {
-        "frame_index": 126,
-        "detections": 2,
-        "latency_ms": 25.850082999999913
-      },
-      {
-        "frame_index": 127,
-        "detections": 2,
-        "latency_ms": 26.850624999999795
-      },
-      {
-        "frame_index": 128,
-        "detections": 2,
-        "latency_ms": 25.664791999999714
-      },
-      {
-        "frame_index": 129,
-        "detections": 2,
-        "latency_ms": 25.945915999999514
-      },
-      {
-        "frame_index": 130,
-        "detections": 2,
-        "latency_ms": 26.388375000000686
-      },
-      {
-        "frame_index": 131,
-        "detections": 2,
-        "latency_ms": 26.353000000000293
-      },
-      {
-        "frame_index": 132,
-        "detections": 2,
-        "latency_ms": 26.082874999999284
-      },
-      {
-        "frame_index": 133,
-        "detections": 2,
-        "latency_ms": 25.759250000000122
-      },
-      {
-        "frame_index": 134,
-        "detections": 2,
-        "latency_ms": 26.33591599999985
-      },
-      {
-        "frame_index": 135,
-        "detections": 2,
-        "latency_ms": 26.311457999999455
-      },
-      {
-        "frame_index": 136,
-        "detections": 2,
-        "latency_ms": 25.890624999999723
-      },
-      {
-        "frame_index": 137,
-        "detections": 2,
-        "latency_ms": 26.765457999999853
-      },
-      {
-        "frame_index": 138,
-        "detections": 2,
-        "latency_ms": 26.226582999999692
-      },
-      {
-        "frame_index": 139,
-        "detections": 2,
-        "latency_ms": 26.31354199999958
-      },
-      {
-        "frame_index": 140,
-        "detections": 2,
-        "latency_ms": 26.81562500000023
-      },
-      {
-        "frame_index": 141,
-        "detections": 2,
-        "latency_ms": 26.032999999999973
-      },
-      {
-        "frame_index": 142,
-        "detections": 2,
-        "latency_ms": 26.09574999999964
-      },
-      {
-        "frame_index": 143,
-        "detections": 2,
-        "latency_ms": 26.486459000000018
-      },
-      {
-        "frame_index": 144,
-        "detections": 2,
-        "latency_ms": 26.35883399999983
-      },
-      {
-        "frame_index": 145,
-        "detections": 2,
-        "latency_ms": 25.936999999999877
-      },
-      {
-        "frame_index": 146,
-        "detections": 2,
-        "latency_ms": 25.633666000000055
-      },
-      {
-        "frame_index": 147,
-        "detections": 2,
-        "latency_ms": 25.635624999999607
-      },
-      {
-        "frame_index": 148,
-        "detections": 2,
-        "latency_ms": 26.535667000000096
-      },
-      {
-        "frame_index": 149,
-        "detections": 2,
-        "latency_ms": 25.705333999999525
-      }
-    ]
-  },
-  {
-    "model_name": "yolov5",
-    "backend_type": "pytorch",
-    "status": "ok",
-    "error": null,
-    "frame_count": 150,
-    "average_fps": 25.056070796782013,
-    "average_latency_ms": 39.91048748666656,
-    "total_latency_ms": 5986.573122999984,
-    "total_detections": 305,
-    "wall_time_s": 6.523052916000001,
-    "output_path": "../outputs/annotated_WhatsApp Video 2026-04-17 at 9.27.53 PM (1)_yolov5_pytorch.mp4",
+    "frame_count": 60,
+    "average_fps": 37.89545103972053,
+    "average_latency_ms": 26.388391550000005,
+    "total_latency_ms": 1583.3034930000003,
+    "total_detections": 55,
+    "wall_time_s": 1.790908125,
+    "output_path": "outputs/annotated_test_video_yolov8_pytorch.mp4",
     "frames_summary": [
       {
         "frame_index": 0,
         "detections": 1,
-        "latency_ms": 52.65512499999936
+        "latency_ms": 50.001666
       },
       {
         "frame_index": 1,
         "detections": 1,
-        "latency_ms": 39.7443750000015
+        "latency_ms": 26.726583000000304
       },
       {
         "frame_index": 2,
-        "detections": 2,
-        "latency_ms": 39.35179199999972
+        "detections": 1,
+        "latency_ms": 26.111999999999913
       },
       {
         "frame_index": 3,
         "detections": 1,
-        "latency_ms": 40.98695799999952
+        "latency_ms": 26.180209000000065
       },
       {
         "frame_index": 4,
-        "detections": 2,
-        "latency_ms": 40.28866699999867
+        "detections": 1,
+        "latency_ms": 25.179708000000023
       },
       {
         "frame_index": 5,
         "detections": 1,
-        "latency_ms": 38.162166999999414
+        "latency_ms": 26.361833000000168
       },
       {
         "frame_index": 6,
         "detections": 1,
-        "latency_ms": 38.89087499999988
+        "latency_ms": 27.228750000000357
       },
       {
         "frame_index": 7,
         "detections": 1,
-        "latency_ms": 39.057750000001334
+        "latency_ms": 25.980208000000005
       },
       {
         "frame_index": 8,
         "detections": 1,
-        "latency_ms": 39.267834000000335
+        "latency_ms": 27.286667000000264
       },
       {
         "frame_index": 9,
         "detections": 1,
-        "latency_ms": 38.417334000000025
+        "latency_ms": 25.675957999999888
       },
       {
         "frame_index": 10,
         "detections": 1,
-        "latency_ms": 42.3766669999992
+        "latency_ms": 26.299375000000236
       },
       {
         "frame_index": 11,
         "detections": 1,
-        "latency_ms": 38.593291999999835
+        "latency_ms": 25.441250000000082
       },
       {
         "frame_index": 12,
         "detections": 1,
-        "latency_ms": 38.85404200000053
+        "latency_ms": 25.722000000000023
       },
       {
         "frame_index": 13,
         "detections": 1,
-        "latency_ms": 38.95512499999931
+        "latency_ms": 25.86404100000017
       },
       {
         "frame_index": 14,
         "detections": 1,
-        "latency_ms": 37.544708000000426
+        "latency_ms": 25.939415999999937
       },
       {
         "frame_index": 15,
         "detections": 1,
-        "latency_ms": 37.95012500000006
+        "latency_ms": 25.70033299999963
       },
       {
         "frame_index": 16,
         "detections": 1,
-        "latency_ms": 38.03179099999987
+        "latency_ms": 24.527041999999888
       },
       {
         "frame_index": 17,
         "detections": 1,
-        "latency_ms": 38.75845800000022
+        "latency_ms": 27.05841600000003
       },
       {
         "frame_index": 18,
         "detections": 1,
-        "latency_ms": 38.6267500000006
+        "latency_ms": 26.14737499999986
       },
       {
         "frame_index": 19,
         "detections": 1,
-        "latency_ms": 37.512416000000215
+        "latency_ms": 25.65737499999976
       },
       {
         "frame_index": 20,
         "detections": 1,
-        "latency_ms": 38.187584000000996
+        "latency_ms": 26.12479099999998
       },
       {
         "frame_index": 21,
         "detections": 1,
-        "latency_ms": 37.57725000000001
+        "latency_ms": 25.63304199999994
       },
       {
         "frame_index": 22,
-        "detections": 2,
-        "latency_ms": 37.63875000000105
+        "detections": 1,
+        "latency_ms": 25.554666999999753
       },
       {
         "frame_index": 23,
-        "detections": 2,
-        "latency_ms": 37.5119580000014
+        "detections": 1,
+        "latency_ms": 25.888083999999978
       },
       {
         "frame_index": 24,
         "detections": 1,
-        "latency_ms": 38.87595899999852
+        "latency_ms": 25.760749999999888
       },
       {
         "frame_index": 25,
-        "detections": 3,
-        "latency_ms": 42.01770900000312
+        "detections": 1,
+        "latency_ms": 25.19587500000009
       },
       {
         "frame_index": 26,
-        "detections": 2,
-        "latency_ms": 39.965750000000355
+        "detections": 1,
+        "latency_ms": 26.321375000000202
       },
       {
         "frame_index": 27,
-        "detections": 2,
-        "latency_ms": 38.30241599999695
+        "detections": 1,
+        "latency_ms": 26.053166000000072
       },
       {
         "frame_index": 28,
-        "detections": 2,
-        "latency_ms": 38.66012499999982
+        "detections": 1,
+        "latency_ms": 25.45116599999986
       },
       {
         "frame_index": 29,
-        "detections": 2,
-        "latency_ms": 38.4217499999977
+        "detections": 1,
+        "latency_ms": 25.75616599999986
       },
       {
         "frame_index": 30,
-        "detections": 2,
-        "latency_ms": 38.121624999998716
+        "detections": 1,
+        "latency_ms": 25.741582999999846
       },
       {
         "frame_index": 31,
-        "detections": 2,
-        "latency_ms": 39.069833999999304
+        "detections": 1,
+        "latency_ms": 31.354291999999617
       },
       {
         "frame_index": 32,
-        "detections": 2,
-        "latency_ms": 38.2070419999998
+        "detections": 1,
+        "latency_ms": 25.81708299999974
       },
       {
         "frame_index": 33,
-        "detections": 2,
-        "latency_ms": 38.40170800000209
+        "detections": 1,
+        "latency_ms": 25.70641600000023
       },
       {
         "frame_index": 34,
-        "detections": 2,
-        "latency_ms": 38.563833000001324
+        "detections": 1,
+        "latency_ms": 25.031541999999796
       },
       {
         "frame_index": 35,
-        "detections": 2,
-        "latency_ms": 42.66799999999904
+        "detections": 1,
+        "latency_ms": 26.579958999999764
       },
       {
         "frame_index": 36,
-        "detections": 2,
-        "latency_ms": 69.84283300000271
+        "detections": 1,
+        "latency_ms": 26.01925000000005
       },
       {
         "frame_index": 37,
-        "detections": 2,
-        "latency_ms": 50.31825000000012
+        "detections": 1,
+        "latency_ms": 25.4094170000001
       },
       {
         "frame_index": 38,
-        "detections": 2,
-        "latency_ms": 38.471874999999045
+        "detections": 1,
+        "latency_ms": 28.429040999999877
       },
       {
         "frame_index": 39,
-        "detections": 2,
-        "latency_ms": 43.58158399999823
+        "detections": 1,
+        "latency_ms": 28.179458999999962
       },
       {
         "frame_index": 40,
-        "detections": 2,
-        "latency_ms": 55.11716600000227
+        "detections": 1,
+        "latency_ms": 26.158625000000324
       },
       {
         "frame_index": 41,
-        "detections": 2,
-        "latency_ms": 38.8149999999996
+        "detections": 1,
+        "latency_ms": 25.93879099999974
       },
       {
         "frame_index": 42,
-        "detections": 2,
-        "latency_ms": 39.29462500000014
+        "detections": 1,
+        "latency_ms": 25.174916000000103
       },
       {
         "frame_index": 43,
-        "detections": 2,
-        "latency_ms": 40.901250000001
+        "detections": 1,
+        "latency_ms": 25.552332999999816
       },
       {
         "frame_index": 44,
-        "detections": 2,
-        "latency_ms": 44.86920800000149
+        "detections": 1,
+        "latency_ms": 26.260208000000063
       },
       {
         "frame_index": 45,
         "detections": 1,
-        "latency_ms": 43.95958299999947
+        "latency_ms": 25.92795800000003
       },
       {
         "frame_index": 46,
-        "detections": 2,
-        "latency_ms": 38.73754099999971
+        "detections": 1,
+        "latency_ms": 25.211166000000063
       },
       {
         "frame_index": 47,
         "detections": 1,
-        "latency_ms": 66.36699999999962
+        "latency_ms": 25.61987500000029
       },
       {
         "frame_index": 48,
         "detections": 1,
-        "latency_ms": 42.236374999998105
+        "latency_ms": 25.415000000000187
       },
       {
         "frame_index": 49,
         "detections": 2,
-        "latency_ms": 39.369042000000576
+        "latency_ms": 25.47062500000008
       },
       {
         "frame_index": 50,
         "detections": 2,
-        "latency_ms": 40.48329199999756
+        "latency_ms": 25.677041999999872
       },
       {
         "frame_index": 51,
-        "detections": 2,
-        "latency_ms": 39.14779199999785
+        "detections": 0,
+        "latency_ms": 25.89004099999981
       },
       {
         "frame_index": 52,
-        "detections": 2,
-        "latency_ms": 40.10112499999963
+        "detections": 0,
+        "latency_ms": 25.028834
       },
       {
         "frame_index": 53,
-        "detections": 2,
-        "latency_ms": 38.59625000000122
+        "detections": 0,
+        "latency_ms": 25.58054200000015
       },
       {
         "frame_index": 54,
-        "detections": 2,
-        "latency_ms": 38.65525000000147
+        "detections": 1,
+        "latency_ms": 25.840749999999968
       },
       {
         "frame_index": 55,
-        "detections": 2,
-        "latency_ms": 38.02866699999896
+        "detections": 1,
+        "latency_ms": 25.946291999999982
       },
       {
         "frame_index": 56,
-        "detections": 2,
-        "latency_ms": 39.27695799999853
+        "detections": 0,
+        "latency_ms": 25.695666999999922
       },
       {
         "frame_index": 57,
-        "detections": 2,
-        "latency_ms": 38.83483399999932
+        "detections": 0,
+        "latency_ms": 25.1967500000001
       },
       {
         "frame_index": 58,
-        "detections": 1,
-        "latency_ms": 38.670666999998105
+        "detections": 0,
+        "latency_ms": 25.53341600000003
       },
       {
         "frame_index": 59,
-        "detections": 1,
-        "latency_ms": 38.21866599999879
-      },
-      {
-        "frame_index": 60,
-        "detections": 1,
-        "latency_ms": 38.81179200000062
-      },
-      {
-        "frame_index": 61,
-        "detections": 1,
-        "latency_ms": 38.08125000000118
-      },
-      {
-        "frame_index": 62,
-        "detections": 2,
-        "latency_ms": 38.74324999999956
-      },
-      {
-        "frame_index": 63,
-        "detections": 2,
-        "latency_ms": 37.60654199999891
-      },
-      {
-        "frame_index": 64,
-        "detections": 2,
-        "latency_ms": 39.014208999997635
-      },
-      {
-        "frame_index": 65,
-        "detections": 1,
-        "latency_ms": 38.65487499999887
-      },
-      {
-        "frame_index": 66,
-        "detections": 1,
-        "latency_ms": 38.804416000001396
-      },
-      {
-        "frame_index": 67,
-        "detections": 1,
-        "latency_ms": 39.07350000000065
-      },
-      {
-        "frame_index": 68,
-        "detections": 1,
-        "latency_ms": 39.1622500000004
-      },
-      {
-        "frame_index": 69,
-        "detections": 1,
-        "latency_ms": 38.058875000000825
-      },
-      {
-        "frame_index": 70,
-        "detections": 1,
-        "latency_ms": 38.29941599999742
-      },
-      {
-        "frame_index": 71,
-        "detections": 1,
-        "latency_ms": 38.733624999998995
-      },
-      {
-        "frame_index": 72,
-        "detections": 1,
-        "latency_ms": 38.994833000000284
-      },
-      {
-        "frame_index": 73,
-        "detections": 1,
-        "latency_ms": 37.97995899999762
-      },
-      {
-        "frame_index": 74,
-        "detections": 1,
-        "latency_ms": 38.765375000000546
-      },
-      {
-        "frame_index": 75,
-        "detections": 2,
-        "latency_ms": 37.62779199999855
-      },
-      {
-        "frame_index": 76,
-        "detections": 2,
-        "latency_ms": 39.69437499999984
-      },
-      {
-        "frame_index": 77,
-        "detections": 2,
-        "latency_ms": 37.96145899999814
-      },
-      {
-        "frame_index": 78,
-        "detections": 2,
-        "latency_ms": 39.53437500000234
-      },
-      {
-        "frame_index": 79,
-        "detections": 3,
-        "latency_ms": 38.399790999999794
-      },
-      {
-        "frame_index": 80,
-        "detections": 3,
-        "latency_ms": 38.86374999999731
-      },
-      {
-        "frame_index": 81,
-        "detections": 2,
-        "latency_ms": 39.19133300000155
-      },
-      {
-        "frame_index": 82,
-        "detections": 2,
-        "latency_ms": 38.606124999997604
-      },
-      {
-        "frame_index": 83,
-        "detections": 3,
-        "latency_ms": 41.88908300000094
-      },
-      {
-        "frame_index": 84,
-        "detections": 3,
-        "latency_ms": 38.98495800000035
-      },
-      {
-        "frame_index": 85,
-        "detections": 3,
-        "latency_ms": 39.14350000000155
-      },
-      {
-        "frame_index": 86,
-        "detections": 3,
-        "latency_ms": 39.47824999999838
-      },
-      {
-        "frame_index": 87,
-        "detections": 3,
-        "latency_ms": 38.61775000000023
-      },
-      {
-        "frame_index": 88,
-        "detections": 3,
-        "latency_ms": 38.446833999998375
-      },
-      {
-        "frame_index": 89,
-        "detections": 4,
-        "latency_ms": 38.951209000000375
-      },
-      {
-        "frame_index": 90,
-        "detections": 4,
-        "latency_ms": 38.02516699999714
-      },
-      {
-        "frame_index": 91,
-        "detections": 4,
-        "latency_ms": 39.480749999999176
-      },
-      {
-        "frame_index": 92,
-        "detections": 4,
-        "latency_ms": 37.923082999999025
-      },
-      {
-        "frame_index": 93,
-        "detections": 3,
-        "latency_ms": 44.194124999997086
-      },
-      {
-        "frame_index": 94,
-        "detections": 4,
-        "latency_ms": 38.30379200000067
-      },
-      {
-        "frame_index": 95,
-        "detections": 5,
-        "latency_ms": 39.022792000000806
-      },
-      {
-        "frame_index": 96,
-        "detections": 5,
-        "latency_ms": 38.250958000002555
-      },
-      {
-        "frame_index": 97,
-        "detections": 4,
-        "latency_ms": 38.50995800000234
-      },
-      {
-        "frame_index": 98,
-        "detections": 5,
-        "latency_ms": 38.62770799999993
-      },
-      {
-        "frame_index": 99,
-        "detections": 3,
-        "latency_ms": 40.29083300000025
-      },
-      {
-        "frame_index": 100,
-        "detections": 3,
-        "latency_ms": 38.85562500000006
-      },
-      {
-        "frame_index": 101,
-        "detections": 2,
-        "latency_ms": 38.4665410000018
-      },
-      {
-        "frame_index": 102,
-        "detections": 2,
-        "latency_ms": 38.58362500000112
-      },
-      {
-        "frame_index": 103,
-        "detections": 2,
-        "latency_ms": 39.20725000000047
-      },
-      {
-        "frame_index": 104,
-        "detections": 3,
-        "latency_ms": 38.71924999999976
-      },
-      {
-        "frame_index": 105,
-        "detections": 3,
-        "latency_ms": 38.36566699999722
-      },
-      {
-        "frame_index": 106,
-        "detections": 3,
-        "latency_ms": 38.38837500000025
-      },
-      {
-        "frame_index": 107,
-        "detections": 2,
-        "latency_ms": 39.28170800000075
-      },
-      {
-        "frame_index": 108,
-        "detections": 2,
-        "latency_ms": 38.985207999999716
-      },
-      {
-        "frame_index": 109,
-        "detections": 2,
-        "latency_ms": 39.01083299999897
-      },
-      {
-        "frame_index": 110,
-        "detections": 2,
-        "latency_ms": 38.40691699999965
-      },
-      {
-        "frame_index": 111,
-        "detections": 2,
-        "latency_ms": 39.97912499999856
-      },
-      {
-        "frame_index": 112,
-        "detections": 2,
-        "latency_ms": 39.856750000001995
-      },
-      {
-        "frame_index": 113,
-        "detections": 2,
-        "latency_ms": 38.989457999999644
-      },
-      {
-        "frame_index": 114,
-        "detections": 2,
-        "latency_ms": 39.27775000000011
-      },
-      {
-        "frame_index": 115,
-        "detections": 2,
-        "latency_ms": 38.79595800000146
-      },
-      {
-        "frame_index": 116,
-        "detections": 2,
-        "latency_ms": 38.804375000001556
-      },
-      {
-        "frame_index": 117,
-        "detections": 3,
-        "latency_ms": 40.024125000002186
-      },
-      {
-        "frame_index": 118,
-        "detections": 2,
-        "latency_ms": 39.42204200000177
-      },
-      {
-        "frame_index": 119,
-        "detections": 2,
-        "latency_ms": 38.83558400000098
-      },
-      {
-        "frame_index": 120,
-        "detections": 2,
-        "latency_ms": 39.09508299999942
-      },
-      {
-        "frame_index": 121,
-        "detections": 2,
-        "latency_ms": 38.710040999998085
-      },
-      {
-        "frame_index": 122,
-        "detections": 2,
-        "latency_ms": 37.85058299999733
-      },
-      {
-        "frame_index": 123,
-        "detections": 2,
-        "latency_ms": 38.356999999997754
-      },
-      {
-        "frame_index": 124,
-        "detections": 2,
-        "latency_ms": 38.34858299999766
-      },
-      {
-        "frame_index": 125,
-        "detections": 3,
-        "latency_ms": 38.41275000000266
-      },
-      {
-        "frame_index": 126,
-        "detections": 2,
-        "latency_ms": 38.87733300000207
-      },
-      {
-        "frame_index": 127,
-        "detections": 2,
-        "latency_ms": 39.458124999999455
-      },
-      {
-        "frame_index": 128,
-        "detections": 2,
-        "latency_ms": 38.59333300000145
-      },
-      {
-        "frame_index": 129,
-        "detections": 3,
-        "latency_ms": 39.695666000000074
-      },
-      {
-        "frame_index": 130,
-        "detections": 2,
-        "latency_ms": 37.536749999997454
-      },
-      {
-        "frame_index": 131,
-        "detections": 3,
-        "latency_ms": 38.64125000000129
-      },
-      {
-        "frame_index": 132,
-        "detections": 3,
-        "latency_ms": 38.84199999999893
-      },
-      {
-        "frame_index": 133,
-        "detections": 3,
-        "latency_ms": 38.01645800000131
-      },
-      {
-        "frame_index": 134,
-        "detections": 2,
-        "latency_ms": 39.847416000000635
-      },
-      {
-        "frame_index": 135,
-        "detections": 2,
-        "latency_ms": 38.249374999999475
-      },
-      {
-        "frame_index": 136,
-        "detections": 2,
-        "latency_ms": 40.03924999999953
-      },
-      {
-        "frame_index": 137,
-        "detections": 2,
-        "latency_ms": 38.813499999999834
-      },
-      {
-        "frame_index": 138,
-        "detections": 2,
-        "latency_ms": 38.00054099999883
-      },
-      {
-        "frame_index": 139,
-        "detections": 2,
-        "latency_ms": 39.2426669999999
-      },
-      {
-        "frame_index": 140,
-        "detections": 2,
-        "latency_ms": 39.67670899999831
-      },
-      {
-        "frame_index": 141,
-        "detections": 2,
-        "latency_ms": 46.39458300000143
-      },
-      {
-        "frame_index": 142,
-        "detections": 2,
-        "latency_ms": 44.37250000000148
-      },
-      {
-        "frame_index": 143,
-        "detections": 2,
-        "latency_ms": 44.089416999998576
-      },
-      {
-        "frame_index": 144,
-        "detections": 2,
-        "latency_ms": 42.59158400000018
-      },
-      {
-        "frame_index": 145,
-        "detections": 2,
-        "latency_ms": 43.37520900000058
-      },
-      {
-        "frame_index": 146,
-        "detections": 2,
-        "latency_ms": 39.73583300000172
-      },
-      {
-        "frame_index": 147,
-        "detections": 3,
-        "latency_ms": 39.57658299999878
-      },
-      {
-        "frame_index": 148,
-        "detections": 2,
-        "latency_ms": 38.23583299999811
-      },
-      {
-        "frame_index": 149,
-        "detections": 2,
-        "latency_ms": 38.72470800000016
+        "detections": 0,
+        "latency_ms": 25.0873330000001
       }
     ]
   }
