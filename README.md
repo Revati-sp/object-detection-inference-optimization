@@ -710,6 +710,10 @@ Both models run on the **PyTorch** backend; first 150 frames shown.
 
 ## Screenshots & Visual Outputs
 
+> **Note:** PNG screenshots are captured from the live frontend and stored in `docs/screenshots/`.
+> Place the corresponding `.png` files there to render the images below.
+> Real evaluation screenshots (image and video workflows) are available in `evaluation/Image evaluation/` and `evaluation/video evaluation/`.
+
 ### Frontend — Detection Tab
 Drag-and-drop image upload with bounding-box overlay, confidence scores, and latency breakdown.
 
@@ -719,6 +723,11 @@ Drag-and-drop image upload with bounding-box overlay, confidence scores, and lat
 Annotated output with per-object labels, confidence, and inference time rendered on the canvas.
 
 ![Detection Results](docs/screenshots/detection-results.png)
+
+### Video Inference Results
+Video upload and processing with bounding boxes, FPS, and latency visualization across frames.
+
+![Video Results](docs/screenshots/video-results.png)
 
 ### Benchmark Results
 Bar charts comparing FPS and average latency across all model × backend combinations.
