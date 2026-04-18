@@ -61,7 +61,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--backend",
-        choices=["pytorch", "torchscript", "onnx"],
+        choices=["pytorch", "torchscript", "onnx", "onnx_quant", "coreml"],
         default="pytorch",
         help="Backend to use (ignored when --compare is set)",
     )
@@ -221,7 +221,7 @@ def evaluate_one(
 def main() -> None:
     args = parse_args()
 
-    all_backends = ["pytorch", "torchscript", "onnx"]
+    all_backends = ["pytorch", "torchscript", "onnx", "onnx_quant"]
     combos: list[tuple[str, str]] = []
 
     if args.compare:

@@ -16,9 +16,11 @@ class ModelName(str, Enum):
 
 
 class BackendType(str, Enum):
-    pytorch = "pytorch"
+    pytorch    = "pytorch"
     torchscript = "torchscript"
-    onnx = "onnx"
+    onnx       = "onnx"
+    onnx_quant = "onnx_quant"  # ONNX Runtime with INT8 dynamic quantization
+    coreml     = "coreml"      # ONNX Runtime CoreML EP (Apple Neural Engine / GPU)
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +123,7 @@ class BenchmarkRequest(BaseModel):
         default=[ModelName.yolov8, ModelName.yolov5]
     )
     backend_types: List[BackendType] = Field(
-        default=[BackendType.pytorch, BackendType.torchscript, BackendType.onnx]
+        default=[BackendType.pytorch, BackendType.torchscript, BackendType.onnx, BackendType.onnx_quant]
     )
     num_runs: int = Field(100, ge=1)
     image_size: int = Field(640, ge=32)

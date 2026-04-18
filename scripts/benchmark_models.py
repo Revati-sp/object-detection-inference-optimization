@@ -52,8 +52,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--backends", nargs="+",
-        default=["pytorch", "torchscript", "onnx"],
-        choices=["pytorch", "torchscript", "onnx"],
+        default=["pytorch", "torchscript", "onnx", "onnx_quant"],
+        choices=["pytorch", "torchscript", "onnx", "onnx_quant", "coreml"],
         help="Inference backends to benchmark",
     )
     parser.add_argument(
@@ -70,7 +70,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--baseline", default="pytorch",
-        choices=["pytorch", "torchscript", "onnx"],
+        choices=["pytorch", "torchscript", "onnx", "onnx_quant", "coreml"],
         help="Backend used as speedup baseline (1.00×)",
     )
     return parser.parse_args()

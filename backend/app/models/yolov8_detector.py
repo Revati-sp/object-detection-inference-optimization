@@ -66,6 +66,10 @@ class YOLOv8Detector(BaseDetector):
     • torchscript — torch.jit.load on an exported .torchscript file
     • onnx       — onnxruntime.InferenceSession on an exported .onnx file
                    (set CUDAExecutionProvider in config for GPU acceleration)
+    • onnx_quant — onnxruntime.InferenceSession on a dynamically INT8-quantized .onnx file
+                   (~3.5x smaller, faster matrix-multiply on CPU; export with scripts/export_onnx_quant.py)
+    • coreml     — onnxruntime.InferenceSession via CoreMLExecutionProvider
+                   (uses Apple Neural Engine / GPU on macOS; same .onnx file as onnx backend)
     """
 
     def __init__(
@@ -99,6 +103,10 @@ class YOLOv8Detector(BaseDetector):
             self._load_torchscript()
         elif self.backend_type == BackendType.onnx:
             self._load_onnx()
+        elif self.backend_type == BackendType.onnx_quant:
+            self._load_onnx_quant()
+        elif self.backend_type == BackendType.coreml:
+            self._load_coreml()
         else:
             raise ValueError(f"Unsupported backend: {self.backend_type}")
 
@@ -144,6 +152,48 @@ class YOLOv8Detector(BaseDetector):
         logger.info("YOLOv8 ONNX providers selected: %s", providers)
         self.ort_session = ort.InferenceSession(path, providers=providers)
 
+    def _load_onnx_quant(self) -> None:
+        """Load an INT8 dynamically-quantized ONNX model.
+
+        The quantized model is ~3.5x smaller than FP32 and typically faster
+        on CPU due to INT8 matrix-multiply acceleration (e.g. VNNI on Intel,
+        NEON dot-product on Apple Silicon).
+        Export with: python scripts/export_onnx_quant.py --model yolov8
+        """
+        import onnxruntime as ort
+        path = self.weights_path or "weights/yolov8n_int8.onnx"
+        if not Path(path).exists():
+            raise FileNotFoundError(
+                f"Quantized ONNX file not found: {path}\n"
+                "Run: python scripts/export_onnx_quant.py --model yolov8"
+            )
+        self.ort_session = ort.InferenceSession(path, providers=["CPUExecutionProvider"])
+        logger.info("YOLOv8 ONNX-Quant (INT8) loaded from %s", path)
+
+    def _load_coreml(self) -> None:
+        """Load the ONNX model through the CoreML Execution Provider.
+
+        Uses the same .onnx export as the onnx backend but routes computation
+        through Apple's CoreML framework (Neural Engine / GPU on macOS).
+        Falls back to CPU if CoreMLExecutionProvider is unavailable.
+        """
+        import onnxruntime as ort
+        path = self.weights_path or "weights/yolov8n.onnx"
+        if not Path(path).exists():
+            raise FileNotFoundError(
+                f"ONNX file not found: {path}\n"
+                "Run: python scripts/export_onnx.py --model yolov8\n"
+                "(CoreML backend reuses the same .onnx file as the onnx backend)"
+            )
+        available = ort.get_available_providers()
+        if "CoreMLExecutionProvider" in available:
+            providers = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+        else:
+            logger.warning("CoreMLExecutionProvider not available; falling back to CPU")
+            providers = ["CPUExecutionProvider"]
+        logger.info("YOLOv8 CoreML providers selected: %s", providers)
+        self.ort_session = ort.InferenceSession(path, providers=providers)
+
     def _get_class_names(self) -> List[str]:
         if self.backend_type == BackendType.pytorch and self.model is not None:
             try:
@@ -166,7 +216,7 @@ class YOLOv8Detector(BaseDetector):
             return self._predict_pytorch(image)
         elif self.backend_type == BackendType.torchscript:
             return self._predict_torchscript(image)
-        elif self.backend_type == BackendType.onnx:
+        elif self.backend_type in (BackendType.onnx, BackendType.onnx_quant, BackendType.coreml):
             return self._predict_onnx(image)
         raise ValueError(f"Unsupported backend: {self.backend_type}")
 
