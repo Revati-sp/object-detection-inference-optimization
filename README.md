@@ -628,26 +628,32 @@ rm -rf frontend/.next && npm run dev
 ### How to Reproduce All Results
 
 ```bash
-# 1. Activate backend virtualenv
-cd backend && source venv/bin/activate && cd ..
+# 1. Activate backend virtualenv (project venv is at .venv/ in the repo root)
+source .venv/bin/activate
 
 # 2. Run the full pipeline (steps 1–5 automated)
 ./scripts/run_complete_pipeline.sh
 
 # --- OR run each step individually ---
 
-# Step 1: Download 200 real COCO val2017 images + annotations
-python scripts/prepare_coco_subset.py --num-images 200
+# Step 1: Dataset is already committed — skip download
+# data/images/val/         139 PNG screenshots (committed)
+# data/annotations/instances_custom.json  374 COCO annotations (committed)
+# To re-annotate after adding new images:
+#   python scripts/create_custom_annotations.py \
+#       --images-dir data/images/val \
+#       --output     data/annotations/instances_custom.json
 
-# Step 2: Export YOLOv8 + YOLOv5 to TorchScript and ONNX
+# Step 2: Export models (FP32 + INT8)
 cd backend
 python ../scripts/export_torchscript.py --model yolov8 --output weights/yolov8n.torchscript
 python ../scripts/export_torchscript.py --model yolov5 --output weights/yolov5s.torchscript
 python ../scripts/export_onnx.py        --model yolov8 --output weights/yolov8n.onnx
 python ../scripts/export_onnx.py        --model yolov5 --output weights/yolov5s.onnx
+python ../scripts/export_onnx_quant.py  # → weights/yolov8n_int8.onnx, weights/yolov5s_int8.onnx
 cd ..
 
-# Step 3: Evaluate mAP across all 6 model/backend combos
+# Step 3: Evaluate mAP across all 8 model/backend combos
 cd backend
 python ../scripts/evaluate_dataset.py \
     --model yolov8 yolov5 --compare \
@@ -656,11 +662,11 @@ python ../scripts/evaluate_dataset.py \
     --output       ../results/eval_report.csv
 cd ..
 
-# Step 4: Benchmark latency/FPS
+# Step 4: Benchmark latency/FPS (4 backends)
 cd backend
 python ../scripts/benchmark_models.py \
     --models yolov8 yolov5 \
-    --backends pytorch torchscript onnx \
+    --backends pytorch torchscript onnx onnx_quant \
     --runs 100 --warmup 20 \
     --output ../results/benchmark.csv
 cd ..
