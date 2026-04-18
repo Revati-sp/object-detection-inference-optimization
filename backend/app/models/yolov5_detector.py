@@ -428,8 +428,13 @@ class YOLOv5Detector(BaseDetector):
         wrapper = _SingleOutputWrapper(inner).eval().to(self.device)
         dummy = torch.zeros(1, 3, self.image_size, self.image_size).to(self.device)
 
+        # Warm-up: force YOLOv5 Detect module to initialise its lazy grid tensors
+        # so they have a fixed shape when torch.jit.trace inspects them.
         with torch.no_grad():
-            traced = torch.jit.trace(wrapper, dummy, strict=False)
+            wrapper(dummy)
+            # check_trace=False skips the post-trace shape-comparison that breaks
+            # on YOLOv5's dynamic grid (torch.Size([]) vs torch.Size([1,3,20,20,2]))
+            traced = torch.jit.trace(wrapper, dummy, strict=False, check_trace=False)
 
         traced.save(str(out))
         logger.info("YOLOv5 TorchScript exported to %s", out)

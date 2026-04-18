@@ -48,6 +48,16 @@ uploads/
 outputs/
 weights/*.torchscript
 weights/*.onnx
+*.pt
+
+# Model hub / framework caches (large, auto-downloaded)
+backend/.torch_cache/
+backend/Ultralytics/
+Ultralytics/
+.torch_cache/
+
+# Downloaded videos
+data/videos/
 
 # Data (but include sample images and annotations for testing)
 data/images/
