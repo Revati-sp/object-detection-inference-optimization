@@ -56,8 +56,14 @@ backend/Ultralytics/
 Ultralytics/
 .torch_cache/
 
-# Downloaded videos
+# Source videos (large raw files — not committed)
 data/videos/
+
+# Demo GIFs and short clips ARE committed (docs/videos/)
+!docs/videos/
+!docs/videos/*.gif
+!docs/videos/*.mp4
+!docs/videos/*.md
 
 # Data (but include val images, sample images, and annotations)
 # Do NOT exclude data/images/ globally — instead exclude only non-val subdirs
