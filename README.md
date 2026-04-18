@@ -18,17 +18,20 @@ and inference acceleration strategies.
 ## Table of Contents
 
 1. [Project Structure](#project-structure)
-2. [Setup](#setup)
-3. [Running the Application](#running-the-application)
-4. [Exporting Models](#exporting-models)
-5. [Scripts Reference](#scripts-reference)
-6. [Benchmarking](#benchmarking)
-7. [Evaluation](#evaluation)
-8. [Model Comparison Report](#model-comparison-report)
-9. [Sample API Requests](#sample-api-requests)
-10. [GPU Acceleration](#gpu-acceleration)
-11. [Troubleshooting](#troubleshooting)
-12. [Assignment Mapping](#assignment-mapping)
+2. [Dataset](#dataset)
+3. [Setup](#setup)
+4. [Running the Application](#running-the-application)
+5. [Exporting Models](#exporting-models)
+6. [Scripts Reference](#scripts-reference)
+7. [Benchmarking](#benchmarking)
+8. [Evaluation](#evaluation)
+9. [Model Comparison Report](#model-comparison-report)
+10. [Sample API Requests](#sample-api-requests)
+11. [GPU Acceleration](#gpu-acceleration)
+12. [Troubleshooting](#troubleshooting)
+13. [Evaluation Results](#evaluation-results)
+14. [Screenshots & Visual Outputs](#screenshots--visual-outputs)
+15. [Assignment Mapping](#assignment-mapping)
 
 ---
 
@@ -286,7 +289,7 @@ curl -X POST http://localhost:8000/api/benchmark \
   }'
 ```
 
-Sample console output:
+Sample console output (measured on Apple M-series CPU, 100 runs, 640×640):
 
 ```
 ────────────────────────────────────────────────────────────────────
@@ -294,14 +297,14 @@ Sample console output:
 ────────────────────────────────────────────────────────────────────
   Model      Backend        Avg ms    Min ms    Max ms    Std ms     FPS  Speedup  Status
 ────────────────────────────────────────────────────────────────────
-  yolov8     pytorch         18.42     16.10     24.31      1.23    54.3    1.00×  ok
-  yolov8     torchscript     14.87     13.50     19.44      0.98    67.2    1.24×  ok
-  yolov8     onnx            11.65     10.20     14.73      0.77    85.8    1.58×  ok
-  yolov5     pytorch         22.10     19.80     28.65      1.44    45.2    1.00×  ok
-  yolov5     torchscript     17.93     16.40     22.10      1.01    55.8    1.23×  ok
-  yolov5     onnx            13.41     11.90     17.22      0.89    74.6    1.65×  ok
+  yolov8     pytorch         44.17     42.39     54.81      1.37    22.6    1.00×  ok
+  yolov8     torchscript     44.57     42.30     91.35      4.75    22.4    0.99×  ok
+  yolov8     onnx            37.14     34.60     53.22      2.66    26.9    1.19×  ok
+  yolov5     pytorch         64.77     60.92    138.69      8.16    15.4    1.00×  ok
+  yolov5     torchscript     62.20     59.93     70.33      1.77    16.1    1.04×  ok
+  yolov5     onnx            64.04     61.89     82.83      2.26    15.6    1.01×  ok
 ────────────────────────────────────────────────────────────────────
-  ✓ Fastest: yolov8/onnx — 11.65 ms  (85.8 FPS)
+  ✓ Fastest: yolov8/onnx — 37.14 ms  (26.9 FPS)
 ```
 
 ---
@@ -317,7 +320,7 @@ data/
 │       ├── img001.jpg
 │       └── ...
 └── annotations/
-    └── instances_val.json     ← COCO-format ground truth
+    └── instances_custom.json  ← COCO-format ground truth
 ```
 
 ### Run evaluation (CLI)
@@ -326,27 +329,27 @@ data/
 # Single model/backend
 python scripts/evaluate_dataset.py \
     --model yolov8 --backend pytorch \
-    --annotations data/annotations/instances_val.json \
+    --annotations data/annotations/instances_custom.json \
     --images-dir data/images/val
 
 # Compare all three backends for YOLOv8
 python scripts/evaluate_dataset.py \
     --model yolov8 --compare \
-    --annotations data/annotations/instances_val.json \
+    --annotations data/annotations/instances_custom.json \
     --images-dir data/images/val \
     --output results/eval_yolov8.csv
 
 # Compare ALL model/backend combos
 python scripts/evaluate_dataset.py \
     --model yolov8 yolov5 --compare \
-    --annotations data/annotations/instances_val.json \
+    --annotations data/annotations/instances_custom.json \
     --images-dir data/images/val \
     --output results/eval_all.csv
 
 # Save COCO prediction JSON for further analysis
 python scripts/evaluate_dataset.py \
     --model yolov8 --backend onnx \
-    --annotations data/annotations/instances_val.json \
+    --annotations data/annotations/instances_custom.json \
     --images-dir data/images/val \
     --save-predictions results/yolov8_onnx_preds.json
 ```
@@ -359,7 +362,7 @@ curl -X POST http://localhost:8000/api/evaluate \
   -d '{
     "model_name": "yolov8",
     "backend_type": "pytorch",
-    "annotations_path": "data/annotations/instances_val.json",
+    "annotations_path": "data/annotations/instances_custom.json",
     "images_dir": "data/images/val",
     "confidence_threshold": 0.25,
     "iou_threshold": 0.45
@@ -393,7 +396,7 @@ python scripts/compare_models.py --output results/comparison
 
 # Benchmark + COCO mAP
 python scripts/compare_models.py \
-    --annotations data/annotations/instances_val.json \
+    --annotations data/annotations/instances_custom.json \
     --images-dir data/images/val \
     --output results/comparison
 
@@ -521,9 +524,34 @@ rm -rf frontend/.next && npm run dev
 
 ---
 
+## Dataset
+
+### Images
+
+| Property | Value |
+|----------|-------|
+| Source | Custom screenshots captured during live application/environment use |
+| Images | **139** PNG screenshots in `data/images/val/` |
+| Annotation format | COCO JSON (`data/annotations/instances_custom.json`) |
+| Annotation method | Pseudo-labeling via YOLOv8n at conf ≥ 0.5 (`scripts/create_custom_annotations.py`) |
+| Total bounding boxes | **374** |
+| Object classes detected | 36 COCO classes: *apple, bed, bench, bicycle, bird, boat, book, bottle, bowl, car, carrot, cat, chair, clock, couch, cup, dining table, dog, donut, keyboard, laptop, microwave, mouse, orange, oven, person, potted plant, refrigerator, sandwich, spoon, sports ball, suitcase, teddy bear, traffic light, tv, vase* |
+
+### Video
+
+| Property | Value |
+|----------|-------|
+| Source | **Synthetically generated** test video (solid-colour frames with a moving rectangle, created by `scripts/run_video_inference.py --generate-test-video`) |
+| Frames used | 100 frames at 640×640 |
+| Purpose | Demonstrates video inference pipeline and measures per-frame latency/FPS; not a real-world video capture |
+
+> **Note on mAP scores**: Annotations are pseudo-labels generated by YOLOv8n. Because the ground truth and the YOLOv8 PyTorch predictions are produced by the same model (at different confidence thresholds), mAP@0.5 = 1.0 for YOLOv8/PyTorch reflects self-consistency, not generalisation. YOLOv5 scores (mAP@0.5 ≈ 0.71–0.76) reflect real cross-model accuracy on the same annotations.
+
+---
+
 ## Evaluation Results
 
-> Results obtained on a 200-image COCO val2017 subset.
+> Results obtained on 139 custom screenshots (`data/images/val/`).
 > Run `./scripts/run_complete_pipeline.sh` to reproduce.
 
 ### Accuracy (mAP)
@@ -596,7 +624,7 @@ cd ..
 cd backend
 python ../scripts/evaluate_dataset.py \
     --model yolov8 yolov5 --compare \
-    --annotations ../data/annotations/instances_val200.json \
+    --annotations ../data/annotations/instances_custom.json \
     --images-dir   ../data/images/val \
     --output       ../results/eval_report.csv
 cd ..
@@ -618,6 +646,48 @@ python ../scripts/run_video_inference.py \
     --results-dir ../results --output-dir ../outputs
 cd ..
 ```
+
+---
+
+## Screenshots & Visual Outputs
+
+> Add screenshots of the running application here for the assignment submission.
+> Suggested captures (save to `docs/screenshots/` and reference below):
+
+### Frontend — Detection Tab
+Upload an image or video, select model + backend, and view bounding boxes with latency.
+
+```
+docs/screenshots/frontend_detect.png   ← drag-and-drop upload + bbox overlay
+```
+
+### Frontend — Benchmark Tab
+Bar charts comparing FPS and latency across all model/backend combinations.
+
+```
+docs/screenshots/frontend_benchmark.png
+```
+
+### Frontend — Evaluate Tab
+mAP@0.5 and mAP@0.5:0.95 results per model/backend.
+
+```
+docs/screenshots/frontend_evaluate.png
+```
+
+### Sample Annotated Prediction
+An example image from `data/images/val/` with bounding boxes drawn from model inference.
+
+```
+docs/screenshots/sample_prediction.png
+```
+
+> **How to capture**: Run the app (`uvicorn` + `npm run dev`), upload one of the 139 val images,
+> take a screenshot, and save it to `docs/screenshots/`. Then replace the placeholder paths above
+> with actual Markdown image links:
+> ```markdown
+> ![Detection UI](docs/screenshots/frontend_detect.png)
+> ```
 
 ---
 
