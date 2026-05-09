@@ -86,7 +86,20 @@ def _benchmark_one(
             num_runs=num_runs,
             status="error",
             error=str(exc),
+            actual_provider="unknown",
+            hardware_accelerated=False,
+            device_info="unknown",
         )
+
+    # Capture actual provider info now that the model is loaded
+    provider_info = detector.get_provider_info()
+    logger.info(
+        "Benchmark provider | %s/%s | actual_provider=%s | hw_accelerated=%s | device=%s",
+        model_name, backend_type,
+        provider_info.get("actual_provider", "unknown"),
+        provider_info.get("hardware_accelerated", False),
+        provider_info.get("device_info", "cpu"),
+    )
 
     # Warmup — not timed; fills GPU pipeline and triggers JIT compilation
     for _ in range(warmup_runs):
@@ -113,6 +126,9 @@ def _benchmark_one(
                 num_runs=num_runs,
                 status="error",
                 error=str(exc),
+                actual_provider=provider_info.get("actual_provider", "unknown"),
+                hardware_accelerated=provider_info.get("hardware_accelerated", False),
+                device_info=provider_info.get("device_info", "cpu"),
             )
         latencies.append((time.perf_counter() - t0) * 1000.0)
 
@@ -129,4 +145,7 @@ def _benchmark_one(
         image_size=image_size,
         num_runs=num_runs,
         status="ok",
+        actual_provider=provider_info.get("actual_provider", "unknown"),
+        hardware_accelerated=provider_info.get("hardware_accelerated", False),
+        device_info=provider_info.get("device_info", "cpu"),
     )

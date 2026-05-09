@@ -31,6 +31,22 @@ export default function RootLayout({
               Inference Optimization
             </span>
 
+            {/* Nav links */}
+            <nav className="hidden sm:flex items-center gap-1 ml-4">
+              <a
+                href="/"
+                className="text-xs text-slate-400 hover:text-slate-100 transition-colors px-2.5 py-1 rounded hover:bg-slate-700"
+              >
+                Detect
+              </a>
+              <a
+                href="/compare"
+                className="text-xs text-slate-400 hover:text-slate-100 transition-colors px-2.5 py-1 rounded hover:bg-slate-700"
+              >
+                Compare
+              </a>
+            </nav>
+
             {/* Spacer */}
             <div className="flex-1" />
 

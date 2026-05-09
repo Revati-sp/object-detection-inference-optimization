@@ -16,6 +16,7 @@ from app.core.logging import logger
 from app.models.base import BaseDetector
 from app.models.yolov8_detector import YOLOv8Detector
 from app.models.yolov5_detector import YOLOv5Detector
+from app.models.rtdetr_detector import RTDETRDetector
 from app.schemas.detection import (
     BackendType,
     BoundingBox,
@@ -41,6 +42,8 @@ def _make_detector(model_name: ModelName, backend_type: BackendType) -> BaseDete
             weights = settings.YOLOV8_TORCHSCRIPT_PATH
         elif backend_type == BackendType.onnx:
             weights = settings.YOLOV8_ONNX_PATH
+        elif backend_type == BackendType.tensorrt:
+            weights = settings.YOLOV8_TENSORRT_PATH
         return YOLOv8Detector(
             backend_type=backend_type,
             weights_path=weights,
@@ -57,12 +60,29 @@ def _make_detector(model_name: ModelName, backend_type: BackendType) -> BaseDete
             weights = settings.YOLOV5_TORCHSCRIPT_PATH
         elif backend_type == BackendType.onnx:
             weights = settings.YOLOV5_ONNX_PATH
+        elif backend_type == BackendType.tensorrt:
+            weights = settings.YOLOV5_TENSORRT_PATH
         # model_variant is only used for torch.hub auto-download (no local .pt)
         hub_variant = settings.YOLOV5_WEIGHTS if "/" not in settings.YOLOV5_WEIGHTS else "yolov5s"
         return YOLOv5Detector(
             backend_type=backend_type,
             weights_path=weights,
             model_variant=hub_variant,
+            confidence_threshold=settings.DEFAULT_CONFIDENCE,
+            iou_threshold=settings.DEFAULT_IOU,
+            image_size=settings.DEFAULT_IMAGE_SIZE,
+        )
+    elif model_name == ModelName.rtdetr:
+        weights = None
+        if backend_type == BackendType.pytorch:
+            weights = settings.RTDETR_WEIGHTS
+        elif backend_type == BackendType.onnx:
+            weights = settings.RTDETR_ONNX_PATH
+        elif backend_type == BackendType.tensorrt:
+            weights = settings.RTDETR_TENSORRT_PATH
+        return RTDETRDetector(
+            backend_type=backend_type,
+            weights_path=weights,
             confidence_threshold=settings.DEFAULT_CONFIDENCE,
             iou_threshold=settings.DEFAULT_IOU,
             image_size=settings.DEFAULT_IMAGE_SIZE,

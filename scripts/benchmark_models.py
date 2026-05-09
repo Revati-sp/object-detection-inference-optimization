@@ -81,35 +81,44 @@ def parse_args() -> argparse.Namespace:
 
 def print_table(rows: list[dict], image_size: int, num_runs: int) -> None:
     """Pretty-print a benchmark result table to stdout."""
-    print(f"\n{'─'*80}")
+    sep = "─" * 100
+    print(f"\n{sep}")
     print(f"  Benchmark Results  │  Image: {image_size}×{image_size}  │  Runs: {num_runs}")
-    print(f"{'─'*80}")
+    print(sep)
     header = (
         f"  {'Model':<10} {'Backend':<14} "
         f"{'Avg ms':>9} {'Min ms':>9} {'Max ms':>9} {'Std ms':>9} "
-        f"{'FPS':>7} {'Speedup':>8}  {'Status':<6}"
+        f"{'FPS':>7} {'Speedup':>8}  {'Actual Provider':<30}  {'HW?':<5}  {'Status':<6}"
     )
     print(header)
-    print(f"{'─'*80}")
+    print(sep)
     for r in rows:
         if r["status"] == "ok":
             speedup_str = f"{r['speedup']:.2f}×" if r["speedup"] is not None else "  —  "
+            provider = r.get("actual_provider", "unknown")[:28]
+            hw = "YES" if r.get("hardware_accelerated") else "cpu"
             print(
                 f"  {r['model_name']:<10} {r['backend_type']:<14} "
                 f"{r['avg_latency_ms']:>9.2f} {r['min_latency_ms']:>9.2f} "
                 f"{r['max_latency_ms']:>9.2f} {r['std_latency_ms']:>9.2f} "
-                f"{r['fps']:>7.1f} {speedup_str:>8}  ok"
+                f"{r['fps']:>7.1f} {speedup_str:>8}  {provider:<30}  {hw:<5}  ok"
             )
         else:
             err = (r.get("error") or "failed")[:30]
-            print(f"  {r['model_name']:<10} {r['backend_type']:<14}  {'— error —':>43}  {err}")
-    print(f"{'─'*80}")
-    # Highlight best
+            print(f"  {r['model_name']:<10} {r['backend_type']:<14}  {'— error —':>57}  {err}")
+    print(sep)
     ok_rows = [r for r in rows if r["status"] == "ok"]
     if ok_rows:
         best = min(ok_rows, key=lambda r: r["avg_latency_ms"])
         print(f"  ✓ Fastest: {best['model_name']}/{best['backend_type']} — "
               f"{best['avg_latency_ms']:.2f} ms  ({best['fps']:.1f} FPS)")
+    # Warn if no hardware acceleration was detected
+    hw_rows = [r for r in ok_rows if r.get("hardware_accelerated")]
+    if not hw_rows:
+        print()
+        print("  ⚠  All results are CPU-only (no CUDA / CoreML / TensorRT acceleration active).")
+        print("     These numbers do NOT demonstrate GPU inference acceleration.")
+        print("     See README.md § GPU Acceleration for how to enable CUDA or CoreML.")
     print()
 
 
@@ -129,7 +138,9 @@ def save_results(all_rows: list[dict], path: str) -> None:
         fieldnames = [
             "image_size", "model_name", "backend_type",
             "avg_latency_ms", "min_latency_ms", "max_latency_ms", "std_latency_ms",
-            "fps", "speedup", "num_runs", "status", "error",
+            "fps", "speedup", "num_runs",
+            "actual_provider", "hardware_accelerated", "device_info",
+            "status", "error",
         ]
         with open(out, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
@@ -191,6 +202,9 @@ def run_benchmark_for_size(
             "fps": entry.fps,
             "speedup": speedup,
             "num_runs": num_runs,
+            "actual_provider": entry.actual_provider,
+            "hardware_accelerated": entry.hardware_accelerated,
+            "device_info": entry.device_info,
             "status": entry.status,
             "error": entry.error,
         })
@@ -203,9 +217,9 @@ def run_benchmark_for_size(
 def main() -> None:
     args = parse_args()
 
-    print("=" * 60)
+    print("=" * 70)
     print("  Object Detection — Inference Benchmark")
-    print("=" * 60)
+    print("=" * 70)
     print(f"  Models:   {args.models}")
     print(f"  Backends: {args.backends}")
     print(f"  Sizes:    {args.sizes}")
@@ -213,6 +227,13 @@ def main() -> None:
     print(f"  Baseline: {args.baseline}")
     if args.output:
         print(f"  Output:   {args.output}")
+    print()
+    print("  Provider note: actual execution provider is logged per row.")
+    print("  'HW?' column shows 'YES' if CUDA/CoreML/TensorRT is active, 'cpu' otherwise.")
+    print("  To benchmark with CoreML (Apple Silicon): add 'coreml' to --backends")
+    print("    and run: pip install onnxruntime-silicon")
+    print("  To benchmark with CUDA (NVIDIA GPU): add 'onnx' to --backends")
+    print("    and run: pip install onnxruntime-gpu")
     print()
 
     all_rows: list[dict] = []

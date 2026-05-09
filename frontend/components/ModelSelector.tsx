@@ -11,12 +11,16 @@ interface Props {
 const MODELS: { value: ModelName; label: string; description: string }[] = [
   { value: "yolov8", label: "YOLOv8", description: "Ultralytics · state-of-the-art" },
   { value: "yolov5", label: "YOLOv5", description: "torch.hub · battle-tested" },
+  { value: "rtdetr", label: "RT-DETR", description: "Transformer · higher mAP" },
 ];
 
 const BACKENDS: { value: BackendType; label: string; description: string }[] = [
   { value: "pytorch", label: "PyTorch", description: "Baseline — Ultralytics / torch.hub" },
   { value: "torchscript", label: "TorchScript", description: "Compiled — requires export step" },
   { value: "onnx", label: "ONNX Runtime", description: "Optimized — CPU or CUDA provider" },
+  { value: "onnx_quant", label: "ONNX INT8", description: "Quantized — smaller & faster on CPU" },
+  { value: "coreml", label: "CoreML", description: "Apple Neural Engine (macOS only)" },
+  { value: "tensorrt", label: "TensorRT", description: "NVIDIA GPU — fastest inference" },
 ];
 
 function RadioCard({

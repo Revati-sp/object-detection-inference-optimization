@@ -6,12 +6,13 @@ and inference acceleration strategies.
 | | |
 |---|---|
 | **Models** | YOLOv8 · YOLOv5 |
-| **Backends** | PyTorch · TorchScript · ONNX Runtime (FP32) · ONNX INT8 Quantized |
-| **API** | FastAPI · OpenAPI / Swagger |
+| **Backends** | PyTorch · TorchScript · ONNX Runtime (FP32) · ONNX INT8 Quantized · CoreML (Apple Silicon) |
+| **API** | FastAPI · REST · OpenAPI / Swagger docs |
 | **Frontend** | Next.js 14 · TypeScript · Tailwind CSS |
 | **Evaluation** | COCO mAP (pycocotools) · Latency · FPS |
 | **Python** | 3.9 + |
 | **Node** | 18 + |
+| **Acceleration** | CPU baseline committed · CoreML (Apple Silicon) · CUDA/TensorRT (NVIDIA GPU) — see [GPU Acceleration](#gpu-acceleration) |
 
 ---
 
@@ -25,14 +26,16 @@ and inference acceleration strategies.
 6. [Scripts Reference](#scripts-reference)
 7. [Benchmarking](#benchmarking)
 8. [Evaluation](#evaluation)
-9. [Model Comparison Report](#model-comparison-report)
-10. [Sample API Requests](#sample-api-requests)
-11. [GPU Acceleration](#gpu-acceleration)
-12. [Troubleshooting](#troubleshooting)
-13. [Evaluation Results](#evaluation-results)
-14. [Video Inference Demo](#video-inference-demo)
-15. [Screenshots & Visual Outputs](#screenshots--visual-outputs)
-16. [Assignment Mapping](#assignment-mapping)
+9. [Manual Annotation Workflow](#manual-annotation-workflow)
+10. [Final Evaluation Protocol](#final-evaluation-protocol)
+11. [Model Comparison Report](#model-comparison-report)
+12. [Sample API Requests](#sample-api-requests)
+13. [GPU Acceleration](#gpu-acceleration)
+14. [Troubleshooting](#troubleshooting)
+15. [Evaluation Results](#evaluation-results)
+16. [Video Inference Demo](#video-inference-demo)
+17. [Screenshots & Visual Outputs](#screenshots--visual-outputs)
+18. [Assignment Mapping](#assignment-mapping)
 
 ---
 
@@ -274,15 +277,18 @@ All scripts are run from the **project root** with the backend venv active.
 | `export_onnx.py` | Export a single model to ONNX (FP32) |
 | `export_onnx_quant.py` | INT8 dynamic quantization of exported ONNX models |
 | `benchmark_models.py` | Latency/FPS table with speedup column; CSV/JSON output |
-| `evaluate_dataset.py` | COCO mAP evaluation; compare mode; CSV/JSON output |
+| `evaluate_dataset.py` | COCO mAP evaluation; `--annotation-type manual/pseudo`; CSV/JSON output |
+| `validate_annotations.py` | **New** — check whether an annotation file is human-created or pseudo-labels |
+| `run_video_inference.py` | Video inference on both models; per-frame CSV + annotated video |
 | `compare_models.py` | Combined benchmark + eval → Markdown + CSV report |
+| `create_custom_annotations.py` | Generate pseudo-label annotations (sanity-check only) |
 
 ---
 
 ## Benchmarking
 
 ```bash
-# All models × all backends, 100 runs at 640×640 (default)
+# All models × all backends, 100 runs at 640×640 (default, CPU-only)
 python scripts/benchmark_models.py
 
 # Quick two-backend comparison, saved as CSV
@@ -297,6 +303,24 @@ python scripts/benchmark_models.py \
     --runs 100 \
     --output results/bench_sweep.csv
 
+# Apple Silicon — CoreML hardware acceleration (requires onnxruntime-silicon)
+# pip install onnxruntime-silicon
+python scripts/benchmark_models.py \
+    --models yolov8 yolov5 \
+    --backends pytorch torchscript onnx onnx_quant coreml \
+    --runs 100 --warmup 20 \
+    --output results/benchmark_coreml.csv
+# Check actual_provider=CoreMLExecutionProvider and hardware_accelerated=True in output
+
+# NVIDIA GPU — CUDA acceleration (requires onnxruntime-gpu + CUDA 11+)
+# pip install onnxruntime-gpu
+python scripts/benchmark_models.py \
+    --models yolov8 yolov5 \
+    --backends pytorch torchscript onnx onnx_quant \
+    --runs 100 --warmup 20 \
+    --output results/benchmark_cuda.csv
+# Check actual_provider=CUDAExecutionProvider and hardware_accelerated=True in output
+
 # Via the API
 curl -X POST http://localhost:8000/api/benchmark \
   -H "Content-Type: application/json" \
@@ -309,23 +333,30 @@ curl -X POST http://localhost:8000/api/benchmark \
   }'
 ```
 
-Sample console output (measured on Apple M-series CPU, 100 runs, 640×640):
+Sample console output (measured on Apple M-series **CPU**, 100 runs, 640×640):
 
 ```
-────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────────────────────────
   Benchmark Results  │  Image: 640×640  │  Runs: 100
-────────────────────────────────────────────────────────────────────
-  Model      Backend        Avg ms    Min ms    Max ms    Std ms     FPS  Speedup  Status
-────────────────────────────────────────────────────────────────────
-  yolov8     pytorch         44.17     42.39     54.81      1.37    22.6    1.00×  ok
-  yolov8     torchscript     44.57     42.30     91.35      4.75    22.4    0.99×  ok
-  yolov8     onnx            37.14     34.60     53.22      2.66    26.9    1.19×  ok
-  yolov5     pytorch         64.77     60.92    138.69      8.16    15.4    1.00×  ok
-  yolov5     torchscript     62.20     59.93     70.33      1.77    16.1    1.04×  ok
-  yolov5     onnx            64.04     61.89     82.83      2.26    15.6    1.01×  ok
-────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  Model      Backend        Avg ms    Min ms    Max ms    Std ms     FPS  Speedup  Actual Provider                HW?    Status
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  yolov8     pytorch         44.17     42.39     54.81      1.37    22.6    1.00×  pytorch_cpu                    cpu    ok
+  yolov8     torchscript     44.57     42.30     91.35      4.75    22.4    0.99×  torchscript_cpu                cpu    ok
+  yolov8     onnx            37.14     34.60     53.22      2.66    26.9    1.19×  CPUExecutionProvider           cpu    ok
+  yolov5     pytorch         64.77     60.92    138.69      8.16    15.4    1.00×  pytorch_cpu                    cpu    ok
+  yolov5     torchscript     62.20     59.93     70.33      1.77    16.1    1.04×  torchscript_cpu                cpu    ok
+  yolov5     onnx            64.04     61.89     82.83      2.26    15.6    1.01×  CPUExecutionProvider           cpu    ok
+────────────────────────────────────────────────────────────────────────────────────────────────────
   ✓ Fastest: yolov8/onnx — 37.14 ms  (26.9 FPS)
+
+  ⚠  All results are CPU-only (no CUDA / CoreML / TensorRT acceleration active).
+     These numbers do NOT demonstrate GPU inference acceleration.
+     See README.md § GPU Acceleration for how to enable CUDA or CoreML.
 ```
+
+> The `HW?` column will show `YES` instead of `cpu` when CoreML or CUDA is active.
+> To see GPU-accelerated numbers, follow [GPU Acceleration](#gpu-acceleration).
 
 ---
 
@@ -345,31 +376,35 @@ data/
 
 ### Run evaluation (CLI)
 
+> **Annotation type matters.** Use `--annotation-type manual` (with `instances_manual.json`)
+> for the final submission.  Use `--annotation-type pseudo` (with `instances_custom.json`)
+> only for a backend sanity check.
+
 ```bash
-# Single model/backend
-python scripts/evaluate_dataset.py \
-    --model yolov8 --backend pytorch \
-    --annotations data/annotations/instances_custom.json \
-    --images-dir data/images/val
+# ── Final submission (manual annotations) ───────────────────────────────────
+# Requires data/annotations/instances_manual.json to be filled with human labels.
+# See docs/annotation_workflow.md for how to create this file.
 
-# Compare all three backends for YOLOv8
-python scripts/evaluate_dataset.py \
-    --model yolov8 --compare \
-    --annotations data/annotations/instances_custom.json \
-    --images-dir data/images/val \
-    --output results/eval_yolov8.csv
-
-# Compare ALL model/backend combos
 python scripts/evaluate_dataset.py \
     --model yolov8 yolov5 --compare \
+    --annotation-type manual \
+    --annotations data/annotations/instances_manual.json \
+    --images-dir data/images/val \
+    --output results/eval_report_manual.csv
+
+# ── Sanity check (pseudo-labels, NOT for final submission) ────────────────
+python scripts/evaluate_dataset.py \
+    --model yolov8 yolov5 --compare \
+    --annotation-type pseudo \
     --annotations data/annotations/instances_custom.json \
     --images-dir data/images/val \
-    --output results/eval_all.csv
+    --output results/eval_report_pseudo.csv
 
-# Save COCO prediction JSON for further analysis
+# ── Save COCO prediction JSON for further analysis ────────────────────────
 python scripts/evaluate_dataset.py \
     --model yolov8 --backend onnx \
-    --annotations data/annotations/instances_custom.json \
+    --annotation-type manual \
+    --annotations data/annotations/instances_manual.json \
     --images-dir data/images/val \
     --save-predictions results/yolov8_onnx_preds.json
 ```
@@ -403,6 +438,95 @@ Sample response:
   "per_image_latencies_ms": [17.1, 19.3, ...]
 }
 ```
+
+---
+
+## Manual Annotation Workflow
+
+> **Required before final submission.**  The `data/annotations/instances_custom.json` file
+> contains pseudo-labels auto-generated by YOLOv8n.  Evaluating YOLOv8/PyTorch against its
+> own outputs gives mAP = 1.000 (circular evaluation, not real accuracy).
+> You must replace the annotations with human-labelled boxes.
+
+Full step-by-step instructions: **[docs/annotation_workflow.md](docs/annotation_workflow.md)**
+
+### Quick summary
+
+| Step | Action |
+|------|--------|
+| 1 | Install **LabelImg** (`pip install labelImg`) or use **CVAT** at app.cvat.ai |
+| 2 | Open `data/images/val/` and draw bounding boxes on ≥ 50 images |
+| 3 | Export as **COCO JSON** |
+| 4 | Save to `data/annotations/instances_manual.json` (template already committed) |
+| 5 | Validate: `python scripts/validate_annotations.py --annotations data/annotations/instances_manual.json` |
+| 6 | Confirm: `Status: ✓ MANUAL ANNOTATIONS — valid for final submission` |
+
+### Validate your annotations
+
+```bash
+# Check that annotations are human-created (exits 0 if valid, 1 if pseudo-labels):
+python scripts/validate_annotations.py \
+    --annotations data/annotations/instances_manual.json
+```
+
+---
+
+## Final Evaluation Protocol
+
+Run these commands in order after completing manual annotations:
+
+```bash
+# Step 1 — validate annotations
+python scripts/validate_annotations.py \
+    --annotations data/annotations/instances_manual.json
+
+# Step 2 — export models (TorchScript + ONNX)
+cd backend && python ../scripts/run_all_exports.py && cd ..
+
+# Step 3 — mAP evaluation on manual annotations (final accuracy)
+cd backend
+python ../scripts/evaluate_dataset.py \
+    --model yolov8 yolov5 --compare \
+    --annotation-type manual \
+    --annotations ../data/annotations/instances_manual.json \
+    --images-dir   ../data/images/val \
+    --output       ../results/eval_report_manual.csv
+cd ..
+
+# Step 4 — latency benchmark (all backends including CoreML for Apple Silicon)
+# Remove 'coreml' if onnxruntime-silicon is not installed.
+# Replace 'coreml' with 'onnx' + onnxruntime-gpu on NVIDIA GPU machines.
+cd backend
+python ../scripts/benchmark_models.py \
+    --models yolov8 yolov5 \
+    --backends pytorch torchscript onnx onnx_quant coreml \
+    --runs 100 --warmup 20 \
+    --output ../results/benchmark.csv
+cd ..
+# Check 'actual_provider' and 'hardware_accelerated' columns in results/benchmark.csv
+# to confirm which execution provider was used for each row.
+
+# Step 5 — video inference on both models
+cd backend
+python ../scripts/run_video_inference.py \
+    --video "../data/videos/<your_video_file>.mp4" \
+    --model yolov8 yolov5 --backend pytorch \
+    --max-frames 150 \
+    --results-dir ../results --output-dir ../outputs
+cd ..
+```
+
+**Report files produced:**
+
+| File | Contents |
+|------|----------|
+| `results/eval_report_manual.csv` | mAP@0.5 and mAP@0.5:0.95 — **use this for submission** |
+| `results/benchmark.csv` | Latency (ms) and FPS per model/backend |
+| `results/video_benchmark.csv` | Per-model video inference speed (both yolov8 and yolov5) |
+
+> The pseudo-label sanity check (`instances_custom.json`) is still available for comparing
+> backends against each other — pass `--annotation-type pseudo` to allow it explicitly.
+> These results must **not** appear as the primary accuracy numbers in your final report.
 
 ---
 
@@ -474,28 +598,103 @@ curl -X POST http://localhost:8000/api/detect/video \
 
 ## GPU Acceleration
 
-### PyTorch (CUDA)
+> **IMPORTANT — About the committed benchmark results:**
+> All numbers in `results/benchmark.csv` and `results/eval_report.csv` were produced on
+> **Apple Silicon CPU** (no CUDA, no CoreML active).  The `actual_provider` column in
+> `benchmark.csv` will read `pytorch_cpu` or `CPUExecutionProvider` — these are **CPU-only
+> results**.  ONNX Runtime on CPU is NOT the same as ONNX Runtime with CUDA or TensorRT.
+> To demonstrate hardware-accelerated inference, follow one of the paths below and re-run
+> the benchmark scripts; the `actual_provider` and `hardware_accelerated` columns will
+> confirm which accelerator is active.
 
-CUDA is detected automatically. For the CUDA-enabled build of PyTorch:
+### Path A — Apple Silicon (CoreML, recommended for this hardware)
+
+The project includes a `coreml` backend that routes ONNX Runtime through Apple's
+CoreML framework (Neural Engine / GPU).  This is the correct acceleration path for
+this machine.
 
 ```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# 1. Install onnxruntime-silicon (replaces onnxruntime)
+pip uninstall onnxruntime
+pip install onnxruntime-silicon
+
+# 2. Verify CoreML is available
+python -c "import onnxruntime as ort; print(ort.get_available_providers())"
+# Expected: [..., 'CoreMLExecutionProvider', 'CPUExecutionProvider']
+
+# 3. Export ONNX models (if not already done)
+cd backend && python ../scripts/run_all_exports.py && cd ..
+
+# 4. Benchmark with CoreML included
+cd backend
+python ../scripts/benchmark_models.py \
+    --models yolov8 yolov5 \
+    --backends pytorch torchscript onnx onnx_quant coreml \
+    --runs 100 --warmup 20 \
+    --output ../results/benchmark_coreml.csv
+cd ..
 ```
 
-### ONNX Runtime (CUDA)
+The `coreml` rows in the output CSV will show `actual_provider=CoreMLExecutionProvider`
+and `hardware_accelerated=True`.
+
+### Path B — NVIDIA GPU (CUDA / TensorRT)
 
 ```bash
+# 1. Install CUDA-enabled PyTorch
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# 2. Install onnxruntime-gpu (replaces onnxruntime)
 pip uninstall onnxruntime
 pip install onnxruntime-gpu
+
+# 3. (Optional) TensorRT execution provider — requires TensorRT installed separately
+#    Once installed, TensorrtExecutionProvider appears automatically in available providers.
+
+# 4. Verify CUDA is available
+python -c "import torch; print(torch.cuda.is_available())"
+python -c "import onnxruntime as ort; print(ort.get_available_providers())"
+# Expected: [..., 'TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+
+# 5. Benchmark with CUDA
+cd backend
+python ../scripts/benchmark_models.py \
+    --models yolov8 yolov5 \
+    --backends pytorch torchscript onnx onnx_quant \
+    --runs 100 --warmup 20 \
+    --output ../results/benchmark_cuda.csv
+cd ..
 ```
 
-Then in `backend/.env`:
+The `onnx` rows will show `actual_provider=CUDAExecutionProvider` and
+`hardware_accelerated=True`.  If TensorRT is installed, add `--backends ... trt` and use
+`TensorrtExecutionProvider`.
 
-```env
-ONNX_EXECUTION_PROVIDER=CUDAExecutionProvider
+### What "ONNX CPU" vs "ONNX CUDA" means
+
+| Scenario | `actual_provider` | `hardware_accelerated` | Notes |
+|---|---|---|---|
+| ONNX on CPU (no GPU) | `CPUExecutionProvider` | `False` | Committed results |
+| ONNX on CUDA GPU | `CUDAExecutionProvider` | `True` | Requires onnxruntime-gpu |
+| ONNX via TensorRT | `TensorrtExecutionProvider` | `True` | Requires TensorRT |
+| ONNX via CoreML | `CoreMLExecutionProvider` | `True` | Requires onnxruntime-silicon |
+
+Run `python scripts/benchmark_models.py --backends onnx coreml` and check the
+`actual_provider` column to confirm which path is active on your machine.  The
+`⚠ All results are CPU-only` footer will appear whenever no hardware acceleration is detected.
+
+### Provider fallback warnings
+
+If the code requests CUDA or CoreML but the provider is unavailable, it logs a prominent
+warning (visible in server logs and `stderr`):
+
+```
+⚠ ONNX CUDA FALLBACK — CUDAExecutionProvider was requested but is NOT active.
+   Running on CPUExecutionProvider instead.
+   Fix: pip install onnxruntime-gpu and ensure CUDA 11+ drivers are installed.
 ```
 
-The code automatically falls back to `CPUExecutionProvider` if CUDA is unavailable.
+This ensures silently falling back to CPU is never invisible in the results.
 
 ---
 
@@ -553,7 +752,7 @@ rm -rf frontend/.next && npm run dev
 | Source | Custom screenshots captured during live application/environment use |
 | Images | **139** PNG screenshots in `data/images/val/` |
 | Annotation format | COCO JSON (`data/annotations/instances_custom.json`) |
-| Annotation method | Pseudo-labeling via YOLOv8n at conf ≥ 0.5 (`scripts/create_custom_annotations.py`) |
+| Annotation method | **Pseudo-labeling** via YOLOv8n at conf ≥ 0.5 — **sanity check only, not for final submission** |
 | Total bounding boxes | **374** |
 | Object classes detected | 36 COCO classes: *apple, bed, bench, bicycle, bird, boat, book, bottle, bowl, car, carrot, cat, chair, clock, couch, cup, dining table, dog, donut, keyboard, laptop, microwave, mouse, orange, oven, person, potted plant, refrigerator, sandwich, spoon, sports ball, suitcase, teddy bear, traffic light, tv, vase* |
 
@@ -567,12 +766,18 @@ rm -rf frontend/.next && npm run dev
 | Demo GIFs | `docs/videos/yolov8-demo.gif`, `docs/videos/yolov5-demo.gif` (~1.1 MB each) |
 | Annotated outputs | `outputs/annotated_*_pytorch.mp4` (generated locally, not committed due to size) |
 
-> **Note on mAP scores**: Annotations are pseudo-labels generated by YOLOv8n. Because the ground truth and the YOLOv8 PyTorch predictions are produced by the same model (at different confidence thresholds), mAP@0.5 = 1.0 for YOLOv8/PyTorch reflects self-consistency, not generalisation. YOLOv5 scores (mAP@0.5 ≈ 0.71–0.76) reflect real cross-model accuracy on the same annotations.
-
-
-### Note on Annotations
-Annotations were generated using an automated pipeline on custom user-collected data.  
-The project focuses on inference optimization and comparative evaluation across models and backends.
+> **⚠ IMPORTANT — Pseudo-label limitation:**
+> `instances_custom.json` annotations were auto-generated by running YOLOv8n on the
+> evaluation images (`scripts/create_custom_annotations.py`).  Evaluating YOLOv8/PyTorch
+> against its own outputs gives mAP = 1.000 (circular, not real accuracy).
+> YOLOv5 scores (≈ 0.71–0.76) reflect genuine cross-model accuracy on those annotations.
+>
+> **For final submission**, replace these with human annotations in
+> `data/annotations/instances_manual.json`.
+> See [docs/annotation_workflow.md](docs/annotation_workflow.md) for the full workflow.
+>
+> Run `python scripts/validate_annotations.py --annotations data/annotations/instances_manual.json`
+> to confirm your annotations are human-created before reporting mAP.
 
 ---
 
@@ -581,23 +786,49 @@ The project focuses on inference optimization and comparative evaluation across 
 > Results obtained on 139 custom screenshots (`data/images/val/`).
 > Run `./scripts/run_complete_pipeline.sh` to reproduce.
 
-### Combined Results — Accuracy × Speed (4 backends)
+> **⚠ TWO KNOWN LIMITATIONS IN COMMITTED RESULTS — READ BEFORE CITING:**
+>
+> 1. **mAP is pseudo-label based, not final accuracy.**
+>    Annotations in `instances_custom.json` were auto-generated by YOLOv8n, so
+>    mAP = 1.000 for YOLOv8/PyTorch is circular (not real accuracy).
+>    The `submission_valid` column in `eval_report.csv` reads `False` for all rows.
+>    Final mAP requires human annotations in `instances_manual.json`
+>    (see [Manual Annotation Workflow](#manual-annotation-workflow)).
+>
+> 2. **All inference ran on CPU — no hardware acceleration was active.**
+>    The `actual_provider` column in `benchmark.csv` reads `CPUExecutionProvider` or
+>    `pytorch_cpu` for every row.  `hardware_accelerated = False` throughout.
+>    ONNX Runtime at 37 ms is ~1.16× faster than PyTorch because of graph-optimization
+>    overhead differences, NOT because a GPU or Neural Engine was used.
+>    For genuine hardware-accelerated numbers, follow the Apple Silicon (CoreML) or
+>    NVIDIA GPU (CUDA/TensorRT) path in [GPU Acceleration](#gpu-acceleration).
 
-> Device: CPU (Apple M-series). 139 custom screenshots, COCO pseudo-labels.
-> Results from `results/eval_report.csv` and `results/benchmark.csv`.
+### Combined Results — Accuracy × Speed (4 backends, CPU-only)
 
-| Model | Backend | mAP@0.5 | mAP@0.5:0.95 | Latency (ms) | FPS | Speedup |
-|-------|---------|:-------:|:------------:|:------------:|:---:|:-------:|
-| YOLOv8n | PyTorch (baseline) | 1.000† | 1.000† | 43.40 | 23.0 | 1.00× |
-| YOLOv8n | TorchScript | 0.970 | 0.961 | 43.79 | 22.8 | 0.99× |
-| YOLOv8n | **ONNX Runtime** | 0.970 | 0.961 | **37.39** | **26.7** | **1.16×** |
-| YOLOv8n | ONNX INT8 (quantized) | 0.919 | 0.885 | 54.02 | 18.5 | 0.80× |
-| YOLOv5s | PyTorch (baseline) | 0.712 | 0.606 | 63.56 | 15.7 | 1.00× |
-| YOLOv5s | TorchScript | 0.763 | 0.657 | 62.49 | 16.0 | 1.02× |
-| YOLOv5s | ONNX Runtime | 0.763 | 0.657 | 67.23 | 14.9 | 0.95× |
-| YOLOv5s | ONNX INT8 (quantized) | 0.763 | 0.645 | 90.14 | 11.1 | 0.71× |
+> Device: CPU (Apple M-series). 139 custom screenshots.
+> **mAP uses pseudo-label annotations (`instances_custom.json`) — sanity check only.**
+> For final submission, re-run with `instances_manual.json` (human annotations).
+> **All latency numbers are CPU; no GPU or CoreML acceleration was active.**
+>
+> Latency columns:
+> - **Benchmark latency** = synthetic 640×640 image, 100 timed runs (`results/benchmark.csv`)
+> - **Eval latency** = average per-image time on the 139 real screenshots (`results/eval_report.csv`)
 
-> † mAP@0.5=1.0 for YOLOv8/PyTorch reflects self-consistency (annotations are pseudo-labels produced by the same model at a different threshold). Cross-model scores (YOLOv5 rows) reflect genuine accuracy on those annotations.
+| Model | Backend | mAP@0.5 | mAP@0.5:0.95 | Benchmark ms | Eval ms | FPS (bench) | Speedup |
+|-------|---------|:-------:|:------------:|:------------:|:-------:|:-----------:|:-------:|
+| YOLOv8n | PyTorch (baseline) | 1.000† | 1.000† | 43.40 | 35.15 | 23.0 | 1.00× |
+| YOLOv8n | TorchScript | 0.970 | 0.961 | 43.79 | 46.48 | 22.8 | 0.99× |
+| YOLOv8n | **ONNX Runtime** | 0.970 | 0.961 | **37.39** | 37.43 | **26.7** | **1.16×** |
+| YOLOv8n | ONNX INT8 (quantized) | 0.919 | 0.885 | 54.02 | 53.46 | 18.5 | 0.80× |
+| YOLOv5s | PyTorch (baseline) | 0.712 | 0.606 | 63.56 | 53.64 | 15.7 | 1.00× |
+| YOLOv5s | TorchScript | 0.763 | 0.657 | 62.49 | 76.75 | 16.0 | 1.02× |
+| YOLOv5s | ONNX Runtime | 0.763 | 0.657 | 67.23 | 75.72 | 14.9 | 0.95× |
+| YOLOv5s | ONNX INT8 (quantized) | 0.763 | 0.645 | 90.14 | 93.77 | 11.1 | 0.71× |
+
+> † mAP@0.5=1.0 for YOLOv8/PyTorch is expected — annotations are pseudo-labels generated by
+> the same model (circular evaluation, not real accuracy).  Cross-model rows (YOLOv5) reflect
+> genuine cross-model accuracy on those pseudo-labels.  Replace with manual annotations for
+> valid final results.
 
 **Fastest: YOLOv8n / ONNX Runtime — 37.4 ms · 26.7 FPS · 1.16× speedup over PyTorch.**
 
@@ -620,15 +851,30 @@ The project focuses on inference optimization and comparative evaluation across 
 | YOLOv5s | ONNX Runtime | 67.23 | 63.86 | 106.97 | 4.61 | 14.9 |
 | YOLOv5s | ONNX INT8 | 90.14 | 87.97 | 153.29 | 6.67 | 11.1 |
 
-### Video Inference (150 frames, real WhatsApp video 576×1024 @ 30 fps)
+### Video Inference (real WhatsApp video 576×1024 @ 30 fps)
 
 > Results from `results/video_benchmark.csv`.
 > Input: `data/videos/WhatsApp Video 2026-04-17 at 9.27.53 PM (1).mp4` — 23.7 s, 576×1024.
+>
+> **Note:** The committed CSV currently shows only one row (yolov8/pytorch, 60 frames).
+> Re-run the command below to populate both models at 150 frames:
+
+```bash
+cd backend
+python ../scripts/run_video_inference.py \
+    --video "../data/videos/WhatsApp Video 2026-04-17 at 9.27.53 PM (1).mp4" \
+    --model yolov8 yolov5 --backend pytorch \
+    --max-frames 150 \
+    --results-dir ../results --output-dir ../outputs
+cd ..
+```
+
+Expected results after re-running:
 
 | Model | Backend | Frames | Avg Latency/Frame (ms) | Avg FPS | Total Detections |
 |-------|---------|--------|----------------------|---------|-----------------|
-| YOLOv8n | PyTorch | 150 | 26.42 | 37.8 | 308 |
-| YOLOv5s | PyTorch | 150 | 39.91 | 25.1 | 305 |
+| YOLOv8n | PyTorch | 150 | ~26 | ~38 | ~300 |
+| YOLOv5s | PyTorch | 150 | ~40 | ~25 | ~300 |
 
 ### How to Reproduce All Results
 
@@ -658,14 +904,28 @@ python ../scripts/export_onnx.py        --model yolov5 --output weights/yolov5s.
 python ../scripts/export_onnx_quant.py  # → weights/yolov8n_int8.onnx, weights/yolov5s_int8.onnx
 cd ..
 
-# Step 3: Evaluate mAP across all 8 model/backend combos
+# Step 3: Pseudo-label sanity check (backend consistency — NOT final accuracy)
+# Uses auto-generated annotations from YOLOv8n; mAP=1.0 for YOLOv8/PyTorch is expected.
+# Replace with instances_manual.json + --annotation-type manual for final submission.
 cd backend
 python ../scripts/evaluate_dataset.py \
     --model yolov8 yolov5 --compare \
+    --annotation-type pseudo \
     --annotations ../data/annotations/instances_custom.json \
     --images-dir   ../data/images/val \
-    --output       ../results/eval_report.csv
+    --output       ../results/eval_report_pseudo.csv
 cd ..
+
+# Step 3b: Final accuracy evaluation (requires human-annotated instances_manual.json)
+# See docs/annotation_workflow.md to create this file first.
+# cd backend
+# python ../scripts/evaluate_dataset.py \
+#     --model yolov8 yolov5 --compare \
+#     --annotation-type manual \
+#     --annotations ../data/annotations/instances_manual.json \
+#     --images-dir   ../data/images/val \
+#     --output       ../results/eval_report_manual.csv
+# cd ..
 
 # Step 4: Benchmark latency/FPS (4 backends)
 cd backend
@@ -758,9 +1018,12 @@ Detailed evaluation (accuracy, latency, video inference, and performance analysi
 | **FastAPI backend** | `backend/app/main.py` — CORS, lifespan; routers for detection, evaluation, and benchmarking; full OpenAPI docs at `/docs` |
 | **React / Next.js frontend** | `frontend/` — Next.js 14 App Router, TypeScript, Tailwind CSS, drag-and-drop upload, canvas bbox overlay, per-frame sparkline charts, Benchmark tab, Evaluate tab, live backend health badge |
 | **Inference acceleration 1: TorchScript** | `export_torchscript()` in both detector classes; TorchScript inference path `_predict_torchscript()`; export via `scripts/export_torchscript.py` and `scripts/run_all_exports.py` |
-| **Inference acceleration 2: ONNX Runtime (FP32)** | `export_onnx()` in both detector classes; ONNX inference via `onnxruntime.InferenceSession`; export via `scripts/export_onnx.py`; 1.16× faster than PyTorch for YOLOv8n |
-| **Inference acceleration 3: ONNX INT8 Quantization** | `_load_onnx_quant()` in both detector classes; dynamic INT8 quantization via `onnxruntime.quantization.quantize_dynamic`; model size 3.5× smaller (12.2 MB → 3.5 MB); export via `scripts/export_onnx_quant.py` |
-| **Custom dataset + annotations** | `data/images/val/` — 139 custom screenshots; `data/annotations/instances_custom.json` — per-object COCO bounding-box annotations generated by `scripts/create_custom_annotations.py` using YOLOv8n at conf=0.5 (pseudo-labeling) |
-| **mAP evaluation on annotated dataset** | `backend/app/services/evaluation.py` — loads COCO-format annotations, runs inference, computes mAP@0.5 and mAP@0.5:0.95 via pycocotools; `POST /api/evaluate`; `scripts/evaluate_dataset.py`; results in `results/eval_report.csv` |
+| **Inference acceleration 2: ONNX Runtime (FP32, CPU)** | `export_onnx()` in both detector classes; ONNX inference via `onnxruntime.InferenceSession`; export via `scripts/export_onnx.py`; 1.16× faster than PyTorch on CPU (graph optimization). **Committed benchmark = CPU-only** (`actual_provider=CPUExecutionProvider`). For GPU acceleration: install `onnxruntime-gpu` (CUDA) or `onnxruntime-silicon` (CoreML). See [GPU Acceleration](#gpu-acceleration). |
+| **Inference acceleration 3: ONNX INT8 Quantization** | `_load_onnx_quant()` in both detector classes; dynamic INT8 quantization via `onnxruntime.quantization.quantize_dynamic`; model size 3.5× smaller (12.2 MB → 3.5 MB); export via `scripts/export_onnx_quant.py`. Runs on CPU; INT8 is slower on Apple Silicon (ARM NEON FP32 is highly optimised). |
+| **Inference acceleration 4: CoreML (Apple Silicon)** | `_load_coreml()` / `coreml` backend in both detector classes; uses ONNX Runtime `CoreMLExecutionProvider` (Apple Neural Engine / GPU); same `.onnx` export as FP32 ONNX; benchmark with `--backends coreml` after `pip install onnxruntime-silicon`. **Not benchmarked in committed results** — user action required. |
+| **Custom dataset** | `data/images/val/` — 139 custom screenshots committed to git; 2 real phone videos referenced in README |
+| **Own annotations (required)** | `data/annotations/instances_manual.json` — template committed; **must be populated with human annotations** before final submission. See [docs/annotation_workflow.md](docs/annotation_workflow.md). Use `python scripts/validate_annotations.py --annotations data/annotations/instances_manual.json` to verify. |
+| **Pseudo-label sanity check** | `data/annotations/instances_custom.json` — auto-generated by `scripts/create_custom_annotations.py` (YOLOv8n at conf=0.5). Valid only for backend consistency checks (`--annotation-type pseudo`). mAP=1.0 for YOLOv8/PyTorch is expected and should not appear as final accuracy. |
+| **mAP evaluation on annotated dataset** | `backend/app/services/evaluation.py` — detects annotation type, warns on pseudo-labels, computes mAP@0.5 and mAP@0.5:0.95 via pycocotools; `POST /api/evaluate`; `scripts/evaluate_dataset.py --annotation-type manual`; final results go in `results/eval_report_manual.csv` |
 | **Latency / FPS metrics** | Returned in every inference response; per-frame metrics for video; dedicated `/api/benchmark` endpoint; `scripts/benchmark_models.py` for CLI access; results in `results/benchmark.csv` |
 | **Video inference** | `backend/app/services/video_processing.py`; `scripts/run_video_inference.py`; annotated videos in `outputs/`; FPS summary in `results/video_benchmark.csv` |

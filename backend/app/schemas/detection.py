@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 class ModelName(str, Enum):
     yolov8 = "yolov8"
     yolov5 = "yolov5"
+    rtdetr = "rtdetr"
 
 
 class BackendType(str, Enum):
@@ -21,6 +22,7 @@ class BackendType(str, Enum):
     onnx       = "onnx"
     onnx_quant = "onnx_quant"  # ONNX Runtime with INT8 dynamic quantization
     coreml     = "coreml"      # ONNX Runtime CoreML EP (Apple Neural Engine / GPU)
+    tensorrt   = "tensorrt"    # TensorRT engine (NVIDIA GPU; export with scripts/export_tensorrt.py)
 
 
 # ---------------------------------------------------------------------------
@@ -112,6 +114,14 @@ class EvaluationResult(BaseModel):
     per_image_latencies_ms: List[float]
     average_latency_ms: float
     fps: float
+    annotation_type: str = Field(
+        "unknown",
+        description="'manual' for human annotations, 'pseudo' for model-generated labels",
+    )
+    annotation_warning: Optional[str] = Field(
+        None,
+        description="Warning message set when pseudo-labels are detected",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +152,19 @@ class BenchmarkEntry(BaseModel):
     num_runs: int
     status: str = "ok"
     error: Optional[str] = None
+    # Provider / hardware evidence fields — populated from detector.get_provider_info()
+    actual_provider: str = Field(
+        "unknown",
+        description="Actual ORT execution provider or pytorch/torchscript device string",
+    )
+    hardware_accelerated: bool = Field(
+        False,
+        description="True if running on GPU/NPU (CUDA, CoreML, TensorRT); False for CPU-only",
+    )
+    device_info: str = Field(
+        "cpu",
+        description="Device string: cpu, cuda, coreml (Apple Neural Engine), tensorrt, etc.",
+    )
 
 
 class BenchmarkResult(BaseModel):
@@ -149,3 +172,26 @@ class BenchmarkResult(BaseModel):
     image_size: int
     num_runs: int
     warmup_runs: int
+
+
+# ---------------------------------------------------------------------------
+# Compare — run multiple model/backend combos on the same image
+# ---------------------------------------------------------------------------
+
+class CompareEntry(BaseModel):
+    model_name: str
+    backend_type: str
+    latency_ms: float
+    preprocessing_ms: float
+    inference_ms: float
+    postprocessing_ms: float
+    total_detections: int
+    detections: List[Detection]
+    status: str = "ok"
+    error: Optional[str] = None
+
+
+class CompareResponse(BaseModel):
+    image_width: int
+    image_height: int
+    comparisons: List[CompareEntry]

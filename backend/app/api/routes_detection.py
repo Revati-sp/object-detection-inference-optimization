@@ -1,8 +1,9 @@
 """
 Detection routes:
-  POST /detect/image  — run inference on an uploaded image
-  POST /detect/video  — run inference on an uploaded video
-  GET  /models        — list available model/backend combinations
+  POST /detect/image   — run inference on an uploaded image
+  POST /detect/video   — run inference on an uploaded video
+  POST /detect/compare — run multiple model/backend combos on the same image
+  GET  /models         — list available model/backend combinations
 """
 from __future__ import annotations
 
@@ -17,6 +18,8 @@ from app.core.config import get_settings
 from app.core.logging import logger
 from app.schemas.detection import (
     BackendType,
+    CompareEntry,
+    CompareResponse,
     DetectionResponse,
     ModelName,
     VideoDetectionResponse,
@@ -105,6 +108,117 @@ async def detect_image(
         model_name, backend_type, response.total_detections, response.latency_ms,
     )
     return response
+
+
+# ---------------------------------------------------------------------------
+# Compare — run multiple model/backend combos on the same image
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/detect/compare",
+    response_model=CompareResponse,
+    summary="Run multiple model/backend combos on the same image and compare results",
+)
+async def compare_models(
+    file: UploadFile = File(..., description="Image file (JPEG, PNG, BMP, WebP)"),
+    model_names: str = Form(
+        "yolov8,yolov5",
+        description="Comma-separated model names, e.g. 'yolov8,yolov5,rtdetr'",
+    ),
+    backend_types: str = Form(
+        "pytorch,pytorch",
+        description="Comma-separated backends (one per model), e.g. 'pytorch,onnx'",
+    ),
+    confidence_threshold: float = Form(0.25, ge=0.0, le=1.0),
+    iou_threshold: float = Form(0.45, ge=0.0, le=1.0),
+):
+    content_type = file.content_type or ""
+    if content_type not in _ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported file type: {content_type}. Allowed: {_ALLOWED_IMAGE_TYPES}",
+        )
+
+    raw = await file.read()
+    if len(raw) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+    try:
+        image = load_image_from_bytes(raw)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    model_list = [m.strip() for m in model_names.split(",") if m.strip()]
+    backend_list = [b.strip() for b in backend_types.split(",") if b.strip()]
+
+    if not model_list:
+        raise HTTPException(status_code=400, detail="model_names must not be empty.")
+
+    # Pad or cycle backend_list to match model_list length
+    while len(backend_list) < len(model_list):
+        backend_list.append(backend_list[-1] if backend_list else "pytorch")
+
+    h, w = image.shape[:2]
+    comparisons: list[CompareEntry] = []
+
+    for m_str, b_str in zip(model_list, backend_list):
+        try:
+            model_name = ModelName(m_str)
+            backend_type = BackendType(b_str)
+        except ValueError as e:
+            comparisons.append(CompareEntry(
+                model_name=m_str,
+                backend_type=b_str,
+                latency_ms=0.0,
+                preprocessing_ms=0.0,
+                inference_ms=0.0,
+                postprocessing_ms=0.0,
+                total_detections=0,
+                detections=[],
+                status="error",
+                error=str(e),
+            ))
+            continue
+
+        try:
+            result = run_image_inference(
+                image=image,
+                model_name=model_name,
+                backend_type=backend_type,
+                confidence_threshold=confidence_threshold,
+                iou_threshold=iou_threshold,
+            )
+            comparisons.append(CompareEntry(
+                model_name=result.model_name,
+                backend_type=result.backend_type,
+                latency_ms=result.latency_ms,
+                preprocessing_ms=result.preprocessing_ms,
+                inference_ms=result.inference_ms,
+                postprocessing_ms=result.postprocessing_ms,
+                total_detections=result.total_detections,
+                detections=result.detections,
+                status="ok",
+            ))
+        except Exception as e:
+            logger.exception("Compare error: %s/%s", m_str, b_str)
+            comparisons.append(CompareEntry(
+                model_name=m_str,
+                backend_type=b_str,
+                latency_ms=0.0,
+                preprocessing_ms=0.0,
+                inference_ms=0.0,
+                postprocessing_ms=0.0,
+                total_detections=0,
+                detections=[],
+                status="error",
+                error=f"{type(e).__name__}: {e}",
+            ))
+
+    logger.info(
+        "Compare | models=%s | backends=%s | image=%dx%d",
+        model_list, backend_list, w, h,
+    )
+    return CompareResponse(image_width=w, image_height=h, comparisons=comparisons)
 
 
 # ---------------------------------------------------------------------------

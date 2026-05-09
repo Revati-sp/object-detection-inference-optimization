@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -36,6 +36,8 @@ class BaseDetector(ABC):
         self.ort_session = None    # onnxruntime.InferenceSession handle
         self.class_names: List[str] = []
         self.device: str = "cpu"
+        # Populated by ONNX load methods with session.get_providers() output
+        self._ort_actual_providers: List[str] = []
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -104,3 +106,18 @@ class BaseDetector(ABC):
             return "cuda" if torch.cuda.is_available() else "cpu"
         except ImportError:
             return "cpu"
+
+    def get_provider_info(self) -> Dict[str, object]:
+        """
+        Return the actual execution provider / hardware info for this detector.
+
+        Used by the benchmark service to populate BenchmarkEntry provider fields,
+        so reports show whether acceleration is real (CUDA/CoreML) or CPU-only.
+
+        Subclasses should override this to return richer information once loaded.
+        """
+        return {
+            "actual_provider": f"{self.backend_type.value}_{self.device}",
+            "hardware_accelerated": self.device == "cuda",
+            "device_info": self.device,
+        }

@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -23,6 +23,72 @@ from app.core.logging import logger
 from app.schemas.detection import BackendType, EvaluationRequest, EvaluationResult, ModelName
 from app.services.inference import get_detector
 from app.utils.image import load_image_from_path
+
+
+# ---------------------------------------------------------------------------
+# Annotation-type detection
+# ---------------------------------------------------------------------------
+
+def _detect_annotation_type(annotations_path: str) -> Tuple[str, List[str]]:
+    """
+    Inspect a COCO annotations file and classify it as 'manual', 'pseudo', or 'template'.
+
+    Pseudo-label indicators (any one is sufficient):
+      • info.contributor == "auto-annotated"
+      • info.description contains "auto-annotated" or "pseudo"
+      • Any annotation record contains a 'score' field (model confidence)
+      • info.status == "NEEDS_ANNOTATIONS"  (template placeholder)
+
+    Returns
+    -------
+    (annotation_type, reasons)
+        annotation_type : "manual" | "pseudo" | "template"
+        reasons         : list of human-readable strings explaining the verdict
+    """
+    try:
+        with open(annotations_path) as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return "unknown", ["Could not read annotations file"]
+
+    info = data.get("info", {})
+
+    # Template / placeholder check
+    if info.get("status") == "NEEDS_ANNOTATIONS":
+        return "template", ["File is a placeholder template — no annotations have been added yet"]
+
+    reasons: List[str] = []
+
+    contributor = info.get("contributor", "").lower()
+    if "auto-annotated" in contributor:
+        reasons.append('info.contributor is "auto-annotated"')
+
+    description = info.get("description", "").lower()
+    if "auto-annotated" in description or "pseudo" in description:
+        reasons.append("info.description indicates pseudo-labels")
+
+    annotations = data.get("annotations", [])
+    if annotations and "score" in annotations[0]:
+        reasons.append(
+            "Annotations contain a 'score' field — this is a model-confidence value "
+            "added by create_custom_annotations.py, not a standard COCO field"
+        )
+
+    ann_type = "pseudo" if reasons else "manual"
+    return ann_type, reasons
+
+
+def _build_pseudo_label_warning(reasons: List[str], annotations_path: str) -> str:
+    reason_text = "; ".join(reasons)
+    return (
+        f"PSEUDO-LABEL ANNOTATIONS DETECTED ({annotations_path}). "
+        f"Reasons: {reason_text}. "
+        "mAP results reflect model self-consistency, NOT real detection accuracy. "
+        "These results are a sanity check only and do not satisfy the requirement "
+        "'Accuracy/mAP must be based on your own annotations.' "
+        "Annotate images manually and use data/annotations/instances_manual.json "
+        "for the final submission. See docs/annotation_workflow.md."
+    )
 
 # COCO pretrained models predict 80-class indices (0-indexed).
 # The official COCO dataset uses a *non-contiguous* 91-class ID scheme.
@@ -43,10 +109,11 @@ def evaluate_dataset(request: EvaluationRequest) -> EvaluationResult:
 
     Steps:
     1. Load COCO annotations JSON.
-    2. For each image, run detector.predict_image().
-    3. Save predictions in COCO detection result format.
-    4. Use pycocotools COCOeval to compute mAP@0.5 and mAP@0.5:0.95.
-    5. Return metrics with latency statistics.
+    2. Detect whether annotations are human-created or pseudo-labels and warn.
+    3. For each image, run detector.predict_image().
+    4. Save predictions in COCO detection result format.
+    5. Use pycocotools COCOeval to compute mAP@0.5 and mAP@0.5:0.95.
+    6. Return metrics with latency statistics and annotation_type metadata.
     """
     try:
         from pycocotools.coco import COCO
@@ -59,6 +126,34 @@ def evaluate_dataset(request: EvaluationRequest) -> EvaluationResult:
 
     annotations_path = Path(request.annotations_path)
     images_dir = Path(request.images_dir)
+
+    # ── Annotation type detection ────────────────────────────────────────────
+    ann_type, ann_reasons = _detect_annotation_type(str(annotations_path))
+    annotation_warning: Optional[str] = None
+
+    if ann_type == "template":
+        raise RuntimeError(
+            f"Annotation file is a placeholder template with no annotations: {annotations_path}. "
+            "Add human annotations first. See docs/annotation_workflow.md."
+        )
+
+    if ann_type == "pseudo":
+        annotation_warning = _build_pseudo_label_warning(ann_reasons, str(annotations_path))
+        logger.warning(annotation_warning)
+        logger.warning(
+            "┌─────────────────────────────────────────────────────────────┐\n"
+            "│  PSEUDO-LABEL WARNING                                        │\n"
+            "│  mAP = 1.000 for YOLOv8/PyTorch is expected here because    │\n"
+            "│  ground truth was generated by the same model.               │\n"
+            "│  These results are NOT valid for final submission.           │\n"
+            "│  Use data/annotations/instances_manual.json instead.        │\n"
+            "└─────────────────────────────────────────────────────────────┘"
+        )
+    else:
+        logger.info(
+            "Annotation type: MANUAL — results are valid for final submission. "
+            "File: %s", annotations_path
+        )
 
     if not annotations_path.exists():
         raise FileNotFoundError(f"Annotations file not found: {annotations_path}")
@@ -143,6 +238,8 @@ def evaluate_dataset(request: EvaluationRequest) -> EvaluationResult:
             per_image_latencies_ms=per_image_latencies,
             average_latency_ms=avg_lat,
             fps=fps,
+            annotation_type=ann_type,
+            annotation_warning=annotation_warning,
         )
 
     # Load predictions into COCOeval
@@ -160,7 +257,10 @@ def evaluate_dataset(request: EvaluationRequest) -> EvaluationResult:
     avg_latency = float(np.mean(per_image_latencies)) if per_image_latencies else 0.0
     fps = 1000.0 / avg_latency if avg_latency > 0 else 0.0
 
-    logger.info("Evaluation done | mAP@0.5=%.4f | mAP@0.5:0.95=%.4f", map_50, map_50_95)
+    logger.info(
+        "Evaluation done | mAP@0.5=%.4f | mAP@0.5:0.95=%.4f | annotation_type=%s",
+        map_50, map_50_95, ann_type,
+    )
 
     return EvaluationResult(
         model_name=request.model_name.value,
@@ -171,6 +271,8 @@ def evaluate_dataset(request: EvaluationRequest) -> EvaluationResult:
         per_image_latencies_ms=per_image_latencies,
         average_latency_ms=avg_latency,
         fps=fps,
+        annotation_type=ann_type,
+        annotation_warning=annotation_warning,
     )
 
 

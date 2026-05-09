@@ -39,8 +39,10 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description=(
-        "Real-time object detection API supporting YOLOv8 and YOLOv5 with "
-        "PyTorch, TorchScript, and ONNX Runtime inference backends."
+        "Real-time object detection REST API supporting YOLOv8 and YOLOv5 with "
+        "PyTorch, TorchScript, and ONNX Runtime inference backends. "
+        "Provides endpoints for image detection, video detection, COCO mAP evaluation, "
+        "and latency benchmarking. Full OpenAPI schema available at /openapi.json."
     ),
     docs_url="/docs",
     redoc_url="/redoc",

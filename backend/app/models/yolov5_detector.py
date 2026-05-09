@@ -83,6 +83,8 @@ class YOLOv5Detector(BaseDetector):
             self._load_onnx_quant()
         elif self.backend_type == BackendType.coreml:
             self._load_coreml()
+        elif self.backend_type == BackendType.tensorrt:
+            self._load_tensorrt()
         else:
             raise ValueError(f"Unsupported backend: {self.backend_type}")
 
@@ -144,13 +146,22 @@ class YOLOv5Detector(BaseDetector):
                 "Run: python scripts/export_onnx.py --model yolov5"
             )
         available = ort.get_available_providers()
+        cuda_requested = "CUDAExecutionProvider" in available
         providers = (
             ["CUDAExecutionProvider", "CPUExecutionProvider"]
-            if "CUDAExecutionProvider" in available
+            if cuda_requested
             else ["CPUExecutionProvider"]
         )
-        logger.info("YOLOv5 ONNX providers selected: %s", providers)
+        logger.info("YOLOv5 ONNX requested providers: %s", providers)
         self.ort_session = ort.InferenceSession(path, providers=providers)
+        self._ort_actual_providers = self.ort_session.get_providers()
+        logger.info("YOLOv5 ONNX actual providers in use: %s", self._ort_actual_providers)
+        if cuda_requested and "CUDAExecutionProvider" not in self._ort_actual_providers:
+            logger.warning(
+                "⚠ ONNX CUDA FALLBACK — CUDAExecutionProvider was requested but is NOT "
+                "active. Running on CPUExecutionProvider instead. "
+                "Fix: pip install onnxruntime-gpu and ensure CUDA 11+ drivers are installed."
+            )
 
     def _load_onnx_quant(self) -> None:
         """Load an INT8 dynamically-quantized ONNX model.
@@ -167,7 +178,8 @@ class YOLOv5Detector(BaseDetector):
                 "Run: python scripts/export_onnx_quant.py --model yolov5"
             )
         self.ort_session = ort.InferenceSession(path, providers=["CPUExecutionProvider"])
-        logger.info("YOLOv5 ONNX-Quant (INT8) loaded from %s", path)
+        self._ort_actual_providers = self.ort_session.get_providers()
+        logger.info("YOLOv5 ONNX-Quant (INT8) loaded from %s | providers: %s", path, self._ort_actual_providers)
 
     def _load_coreml(self) -> None:
         """Load the ONNX model through the CoreML Execution Provider.
@@ -175,6 +187,7 @@ class YOLOv5Detector(BaseDetector):
         Uses the same .onnx export as the onnx backend but routes computation
         through Apple's CoreML framework (Neural Engine / GPU on macOS).
         Falls back to CPU if CoreMLExecutionProvider is unavailable.
+        Install: pip install onnxruntime-silicon  (Apple Silicon Mac)
         """
         import onnxruntime as ort
         path = self.weights_path or "weights/yolov5s.onnx"
@@ -185,14 +198,90 @@ class YOLOv5Detector(BaseDetector):
                 "(CoreML backend reuses the same .onnx file as the onnx backend)"
             )
         available = ort.get_available_providers()
-        if "CoreMLExecutionProvider" in available:
+        coreml_requested = "CoreMLExecutionProvider" in available
+        if coreml_requested:
             providers = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
         else:
-            import warnings
-            warnings.warn("CoreMLExecutionProvider not available; falling back to CPU")
             providers = ["CPUExecutionProvider"]
-        logger.info("YOLOv5 CoreML providers selected: %s", providers)
+        logger.info("YOLOv5 CoreML requested providers: %s", providers)
         self.ort_session = ort.InferenceSession(path, providers=providers)
+        self._ort_actual_providers = self.ort_session.get_providers()
+        logger.info("YOLOv5 CoreML actual providers in use: %s", self._ort_actual_providers)
+        if coreml_requested and "CoreMLExecutionProvider" not in self._ort_actual_providers:
+            logger.warning(
+                "⚠ CoreML FALLBACK — CoreMLExecutionProvider was requested but is NOT active. "
+                "Running on CPUExecutionProvider instead. "
+                "Fix: pip install onnxruntime-silicon (requires macOS 12+ and Apple Silicon/Intel Mac)"
+            )
+        elif not coreml_requested:
+            logger.warning(
+                "⚠ CoreML NOT AVAILABLE — CoreMLExecutionProvider is not in the available "
+                "provider list %s. Running on CPUExecutionProvider. "
+                "Fix: pip install onnxruntime-silicon", available
+            )
+
+    def _load_tensorrt(self) -> None:
+        """Load a TensorRT .engine file via torch.hub YOLOv5 API."""
+        import torch
+        path = self.weights_path or "weights/yolov5s.engine"
+        if not Path(path).exists():
+            raise FileNotFoundError(
+                f"TensorRT engine not found: {path}\n"
+                "Run: python scripts/export_tensorrt.py --model yolov5"
+            )
+        if self.device != "cuda":
+            raise RuntimeError(
+                "TensorRT backend requires a CUDA-capable GPU. "
+                "No CUDA device was detected on this machine."
+            )
+        import os
+        backend_root = Path(__file__).resolve().parents[2]
+        project_root = backend_root.parent
+        preferred = backend_root / ".torch_cache"
+        fallback = project_root / ".torch_cache"
+        hub_dir = str(preferred if preferred.exists() else fallback)
+        os.makedirs(hub_dir, exist_ok=True)
+        torch.hub.set_dir(hub_dir)
+        self.model = torch.hub.load(
+            "ultralytics/yolov5",
+            "custom",
+            path=path,
+            verbose=False,
+        )
+        self.model.conf = self.confidence_threshold
+        self.model.iou = self.iou_threshold
+        logger.info("YOLOv5 TensorRT engine loaded from %s", path)
+
+    def get_provider_info(self) -> dict:
+        """Return the actual execution provider and hardware acceleration status."""
+        if self.backend_type == BackendType.tensorrt:
+            return {
+                "actual_provider": "TensorRT_YOLOv5",
+                "hardware_accelerated": True,
+                "device_info": "cuda (tensorrt)",
+            }
+        if self.backend_type in (BackendType.onnx, BackendType.onnx_quant, BackendType.coreml):
+            actual = self._ort_actual_providers
+            first = actual[0] if actual else "CPUExecutionProvider"
+            hw_accel = first not in ("CPUExecutionProvider",)
+            if "CUDA" in first:
+                dev = "cuda"
+            elif "CoreML" in first:
+                dev = "coreml (Apple Neural Engine)"
+            elif "TensorRT" in first:
+                dev = "tensorrt"
+            else:
+                dev = "cpu"
+            return {
+                "actual_provider": first,
+                "hardware_accelerated": hw_accel,
+                "device_info": dev,
+            }
+        return {
+            "actual_provider": f"{self.backend_type.value}_{self.device}",
+            "hardware_accelerated": self.device == "cuda",
+            "device_info": self.device,
+        }
 
     def _get_class_names(self) -> List[str]:
         if self.backend_type == BackendType.pytorch and self.model is not None:
@@ -214,7 +303,7 @@ class YOLOv5Detector(BaseDetector):
     def predict_image(
         self, image: np.ndarray
     ) -> Tuple[List[Detection], Dict[str, float]]:
-        if self.backend_type == BackendType.pytorch:
+        if self.backend_type in (BackendType.pytorch, BackendType.tensorrt):
             return self._predict_pytorch(image)
         elif self.backend_type == BackendType.torchscript:
             return self._predict_torchscript(image)

@@ -58,8 +58,8 @@ def parse_args() -> argparse.Namespace:
                    help="Create a synthetic 10-second test video if --video is not given")
     p.add_argument("--model", nargs="+",
                    choices=["yolov8", "yolov5"],
-                   default=["yolov8"],
-                   help="Model(s) to run")
+                   default=["yolov8", "yolov5"],
+                   help="Model(s) to run (default: both yolov8 and yolov5)")
     p.add_argument("--backend", nargs="+",
                    choices=["pytorch", "torchscript", "onnx"],
                    default=["pytorch"],

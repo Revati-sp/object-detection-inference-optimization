@@ -1,6 +1,7 @@
 import type {
   BackendType,
   BenchmarkResult,
+  CompareResponse,
   DetectionResponse,
   EvaluationResult,
   ModelName,
@@ -131,6 +132,32 @@ export async function runBenchmark(
     }),
   });
   return handleResponse<BenchmarkResult>(res);
+}
+
+// ---------------------------------------------------------------------------
+// Compare
+// ---------------------------------------------------------------------------
+
+export async function compareModels(
+  file: File,
+  combos: { modelName: ModelName; backendType: BackendType }[],
+  options: {
+    confidenceThreshold?: number;
+    iouThreshold?: number;
+  } = {}
+): Promise<CompareResponse> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("model_names", combos.map((c) => c.modelName).join(","));
+  form.append("backend_types", combos.map((c) => c.backendType).join(","));
+  form.append("confidence_threshold", String(options.confidenceThreshold ?? 0.25));
+  form.append("iou_threshold", String(options.iouThreshold ?? 0.45));
+
+  const res = await fetch(`${BASE_URL}/api/detect/compare`, {
+    method: "POST",
+    body: form,
+  });
+  return handleResponse<CompareResponse>(res);
 }
 
 // ---------------------------------------------------------------------------

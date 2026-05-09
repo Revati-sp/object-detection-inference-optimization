@@ -1,7 +1,7 @@
 // ── API enum mirrors ────────────────────────────────────────────────────────
 
-export type ModelName = "yolov8" | "yolov5";
-export type BackendType = "pytorch" | "torchscript" | "onnx";
+export type ModelName = "yolov8" | "yolov5" | "rtdetr";
+export type BackendType = "pytorch" | "torchscript" | "onnx" | "onnx_quant" | "coreml" | "tensorrt";
 
 // ── Detection primitives ────────────────────────────────────────────────────
 
@@ -90,6 +90,27 @@ export interface EvaluationResult {
   per_image_latencies_ms: number[];
   average_latency_ms: number;
   fps: number;
+}
+
+// ── Compare ─────────────────────────────────────────────────────────────────
+
+export interface CompareEntry {
+  model_name: string;
+  backend_type: string;
+  latency_ms: number;
+  preprocessing_ms: number;
+  inference_ms: number;
+  postprocessing_ms: number;
+  total_detections: number;
+  detections: Detection[];
+  status: "ok" | "error";
+  error?: string;
+}
+
+export interface CompareResponse {
+  image_width: number;
+  image_height: number;
+  comparisons: CompareEntry[];
 }
 
 // ── UI state ─────────────────────────────────────────────────────────────────
