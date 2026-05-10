@@ -1,0 +1,11 @@
+model_name,backend_type,num_images,map_50,map_50_95,average_latency_ms,fps,annotation_type,annotations_file,num_gt_boxes,submission_valid,status,error
+yolov8,pytorch,59,0.22523670676699212,0.1050727858419326,31.873165966101666,31.374354247191455,manual,data/annotations/instances_manual.json,136,True,ok,
+yolov8,torchscript,0,0.0,0.0,0.0,0.0,unknown,data/annotations/instances_manual.json,136,False,error,"TorchScript file not found: weights/yolov8n.torchscript
+Run: python scripts/export_torchscript.py --model yolov8"
+yolov8,onnx,59,0.2252713874328609,0.10345317882628598,66.24598316949167,15.095254869136443,manual,data/annotations/instances_manual.json,136,True,ok,
+yolov8,onnx_quant,59,0.21684232528829323,0.1001660515362313,89.53210032203401,11.169178388568398,manual,data/annotations/instances_manual.json,136,True,ok,
+yolov5,pytorch,59,0.21887870804624324,0.10455322581339406,47.572348932203646,21.020614336809835,manual,data/annotations/instances_manual.json,136,True,ok,
+yolov5,torchscript,0,0.0,0.0,0.0,0.0,unknown,data/annotations/instances_manual.json,136,False,error,"TorchScript file not found: weights/yolov5s.torchscript
+Run: python scripts/export_torchscript.py --model yolov5"
+yolov5,onnx,59,0.21740031145971742,0.1035275164421204,129.05073937288122,7.748890125383818,manual,data/annotations/instances_manual.json,136,True,ok,
+yolov5,onnx_quant,59,0.21456729006233954,0.10896142739273927,151.5493461186438,6.598510819156736,manual,data/annotations/instances_manual.json,136,True,ok,
