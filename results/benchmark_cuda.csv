@@ -1,3 +1,2 @@
 image_size,model_name,backend_type,avg_latency_ms,min_latency_ms,max_latency_ms,std_latency_ms,fps,speedup,num_runs,actual_provider,hardware_accelerated,device_info,status,error
-640,yolov8,onnx,0.0,0.0,0.0,0.0,0.0,,100,unknown,False,unknown,error,"ONNX file not found: weights/yolov8n.onnx
-Run: python scripts/export_onnx.py --model yolov8"
+640,yolov8,onnx,13.857670020008754,12.738140999999814,16.70623700010765,0.6816512977310718,72.1622032099281,,100,CUDAExecutionProvider,True,cuda,ok,
